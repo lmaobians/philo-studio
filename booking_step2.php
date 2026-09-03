@@ -32,7 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .step-header { text-align: center; margin-bottom: 25px; }
         .selected-pkg-bar { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
 
-        /* Custom Visual Calendar UI */
         .calendar-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
         .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .cal-header h3 { margin: 0; font-size: 1.1rem; }
@@ -44,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .cal-date.selected { background: #111 !important; color: #fff !important; border-color: #111 !important; }
         .cal-date.disabled { background: #f5f5f5; color: #ccc; cursor: not-allowed; text-decoration: line-through; border-color: transparent; }
 
-        /* Time Slots Grid */
         .slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 15px; }
         .slot-btn { padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; text-align: center; cursor: pointer; font-size: 0.88rem; font-weight: 500; }
         .slot-btn.selected { background: #111; color: #fff; border-color: #111; }
@@ -72,7 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="hidden" name="schedule_date" id="schedule_date" required>
             <input type="hidden" name="schedule_time" id="schedule_time" required>
 
-            <!-- Calendar Widget -->
             <div class="calendar-card">
                 <div class="cal-header">
                     <button type="button" class="cal-nav" onclick="changeMonth(-1)">&lt; Prev</button>
@@ -82,7 +79,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="cal-grid" id="calendar_days"></div>
             </div>
 
-            <!-- Time Slots -->
             <div class="calendar-card" id="time_section" style="display: none;">
                 <h3 style="margin-top: 0; font-size: 1.05rem;">Available Time Slots (10:00 AM – 7:00 PM)</h3>
                 <div class="slot-grid" id="slots_container"></div>
@@ -108,7 +104,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
             monthYearText.innerText = `${monthNames[month]} ${year}`;
 
-            // Add Day Labels
             const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
             days.forEach(d => {
                 const label = document.createElement('div');
@@ -122,12 +117,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            // Blank spaces before day 1
             for (let i = 0; i < firstDay; i++) {
                 grid.appendChild(document.createElement('div'));
             }
 
-            // Render Days
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateObj = new Date(year, month, day);
                 const dayOfWeek = dateObj.getDay();
@@ -137,7 +130,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 dayCell.className = 'cal-date';
                 dayCell.innerText = day;
 
-                // Disable past dates and Mondays (1 = Monday)
                 if (dateObj < today || dayOfWeek === 1) {
                     dayCell.classList.add('disabled');
                     if (dayOfWeek === 1) dayCell.title = "Closed on Mondays";
@@ -165,8 +157,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             container.innerHTML = '';
             document.getElementById('time_section').style.display = 'block';
 
-            let start = 10 * 60; // 10:00 AM
-            let end = 19 * 60;   // 7:00 PM
+            let start = 10 * 60;
+            let end = 19 * 60;
 
             while (start + slotMinutes <= end) {
                 let hours = Math.floor(start / 60);

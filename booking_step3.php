@@ -47,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .card-panel { background: #ffffff; border: 1px solid #eaeaea; border-radius: 16px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
         .section-label { font-size: 0.9rem; font-weight: 600; color: #333; margin-bottom: 12px; display: block; }
         
-        /* Interactive Backdrop Swatches */
         .color-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 30px; }
         .color-swatch {
             border: 1px solid #e2e8f0;
@@ -66,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .color-swatch .dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,0.1); }
         
-        /* Active Swatch Color Styles */
         .color-swatch[data-color="Grey"].selected { background-color: #808080 !important; color: #fff !important; border-color: #808080 !important; }
         .color-swatch[data-color="White"].selected { background-color: #ffffff !important; color: #111 !important; border-color: #111 !important; }
         .color-swatch[data-color="Sage"].selected { background-color: #9caf88 !important; color: #fff !important; border-color: #9caf88 !important; }
@@ -76,7 +74,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .color-swatch[data-color="Slate Grey"].selected { background-color: #708090 !important; color: #fff !important; border-color: #708090 !important; }
         .color-swatch[data-color="Red"].selected { background-color: #d32f2f !important; color: #fff !important; border-color: #d32f2f !important; }
 
-        /* Pet Toggle Buttons */
         .toggle-group { display: flex; gap: 12px; margin-bottom: 25px; }
         .toggle-btn {
             flex: 1;
@@ -91,7 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         .toggle-btn.selected { background: #111; color: #fff; border-color: #111; }
 
-        /* Image-Matched Pet Form Block */
         .pet-details-card {
             background: #ffffff;
             border: 1px solid #eeeeee;
@@ -132,7 +128,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <input type="hidden" name="backdrop_color" id="backdrop_color" required>
                 <input type="hidden" name="has_pets" id="has_pets" value="No">
 
-                <!-- Backdrop Color Selection Swatches -->
                 <label class="section-label">Select Backdrop Color</label>
                 <div class="color-grid">
                     <?php if ($is_darkroom): ?>
@@ -148,14 +143,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php endif; ?>
                 </div>
 
-                <!-- Pet Toggle Buttons -->
                 <label class="section-label">Bringing Pets?</label>
                 <div class="toggle-group">
                     <div class="toggle-btn selected" id="pet_no" onclick="setPetToggle('No')">No</div>
                     <div class="toggle-btn" id="pet_yes" onclick="setPetToggle('Yes')">Yes</div>
                 </div>
 
-                <!-- Pet Input Block (Matched to provided design image) -->
                 <div class="pet-details-card" id="pet_info_card" style="display: none;">
                     <div class="pet-grid-2col">
                         <div>

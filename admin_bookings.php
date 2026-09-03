@@ -2,20 +2,15 @@
 session_start();
 require_once 'config/database.php';
 
-// Check if user is logged in as admin (adjust session check as needed)
-// if (!isset($_SESSION['is_admin'])) { header("Location: login.php"); exit(); }
-
 $database = new Database();
 $db = $database->getConnection();
 
-// Handle status updates
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['booking_id'], $_POST['status'])) {
     $update_stmt = $db->prepare("UPDATE bookings SET booking_status = ? WHERE booking_id = ?");
     $update_stmt->execute([$_POST['status'], $_POST['booking_id']]);
     $msg = "Booking status updated successfully.";
 }
 
-// Fetch all bookings with customer and package details
 $query = "SELECT b.*, c.full_name, c.email, c.phone, p.name as package_name, p.price 
           FROM bookings b
           JOIN customers c ON b.customer_id = c.customer_id

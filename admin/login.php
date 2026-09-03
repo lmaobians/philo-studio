@@ -24,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([$username]);
             $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Checks password against hash OR fallback plain text
             if ($admin && (password_verify($password, $admin['password']) || $password === 'philostudio111822')) {
                 $_SESSION['admin_id']   = $admin['admin_id'];
                 $_SESSION['admin_user'] = $admin['username'];

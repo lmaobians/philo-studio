@@ -4,7 +4,6 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 require_once '../config/database.php';
 
-// Auth Guard
 if (!isset($_SESSION['admin_id'])) {
     header("Location: login.php");
     exit();
@@ -13,10 +12,8 @@ if (!isset($_SESSION['admin_id'])) {
 $database = new Database();
 $db = $database->getConnection();
 
-// --- HANDLE POST ACTIONS (CRUD) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     
-    // 1. CREATE: Add New Booking with Full 4-Step Walk-in Workflow
     if ($_POST['action'] === 'create_booking') {
         $cust_name  = trim($_POST['full_name']);
         $cust_email = trim($_POST['email']);
@@ -33,7 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $pay_method = $_POST['payment_method'];
         $notes      = trim($_POST['notes']);
 
-        // Handle Payment Proof File Upload
         $payment_proof_path = null;
         if (isset($_FILES['payment_proof']) && $_FILES['payment_proof']['error'] === UPLOAD_ERR_OK) {
             $upload_dir = '../uploads/';
@@ -49,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
         }
         
-        // Find or Create Customer
         $c_stmt = $db->prepare("SELECT customer_id FROM customers WHERE email = ? LIMIT 1");
         $c_stmt->execute([$cust_email]);
         $customer = $c_stmt->fetch(PDO::FETCH_ASSOC);
@@ -62,7 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $customer_id = $db->lastInsertId();
         }
 
-        // Build Booking Notes string containing customization info
         $full_notes = "Payment Method: " . strtoupper($pay_method);
         if (!empty($backdrop)) $full_notes .= " | Backdrop: " . $backdrop;
         if ($has_pets) $full_notes .= " | Pets: Yes (Free) - " . ($pet_details ?: 'No details');
@@ -70,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
         $booking_ref = 'BK-' . strtoupper(substr(uniqid(), -6));
         
-        // Walk-in bookings with Cash or uploaded proof default to Confirmed status
         $initial_status = ($pay_method === 'cash' || !empty($payment_proof_path)) ? 'Confirmed' : 'Pending';
 
         $ins_book = $db->prepare("
@@ -84,7 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         exit();
     }
 
-    // 2. UPDATE: Change Booking Status
     if ($_POST['action'] === 'update_status' && isset($_POST['booking_id'], $_POST['status'])) {
         $b_id   = (int)$_POST['booking_id'];
         $status = $_POST['status'];
@@ -97,7 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         exit();
     }
 
-    // 3. DELETE: Remove Booking Record
     if ($_POST['action'] === 'delete_booking' && isset($_POST['booking_id'])) {
         $b_id = (int)$_POST['booking_id'];
 
@@ -110,7 +101,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// --- READ: Fetch Data ---
 $packages = $db->query("SELECT package_id, name, price FROM packages ORDER BY price ASC")->fetchAll(PDO::FETCH_ASSOC);
 
 $total_bookings  = $db->query("SELECT COUNT(*) FROM bookings")->fetchColumn();
@@ -358,7 +348,6 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
             font-size: 0.88rem;
         }
 
-        /* Multi-step Modal Styling */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -517,7 +506,6 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     </span>
                                 </td>
                                 <td>
-                                    <!-- UPDATE STATUS FORM -->
                                     <form method="POST" style="display:inline-block;">
                                         <input type="hidden" name="action" value="update_status">
                                         <input type="hidden" name="booking_id" value="<?= $b['booking_id'] ?>">
@@ -529,7 +517,6 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <?php endif; ?>
                                     </form>
 
-                                    <!-- DELETE FORM -->
                                     <form method="POST" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to delete this booking?');">
                                         <input type="hidden" name="action" value="delete_booking">
                                         <input type="hidden" name="booking_id" value="<?= $b['booking_id'] ?>">
@@ -545,7 +532,6 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     </div>
 
-    <!-- MULTI-STEP WALK-IN BOOKING MODAL -->
     <div class="modal-overlay" id="createModal">
         <div class="modal-card">
             
@@ -559,7 +545,6 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <form method="POST" enctype="multipart/form-data" id="walkinForm">
                 <input type="hidden" name="action" value="create_booking">
 
-                <!-- STEP 1: Client Info & Package -->
                 <div class="step-content active" id="step-1">
                     <h3 style="margin-top:0;">Step 1: Client & Package Selection</h3>
                     <div class="form-group">
@@ -587,7 +572,6 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 </div>
 
-                <!-- STEP 2: Backdrop & Customization -->
                 <div class="step-content" id="step-2">
                     <h3 style="margin-top:0;">Step 2: Customization & Add-ons</h3>
                     <div class="form-group">
@@ -616,7 +600,6 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 </div>
 
-                <!-- STEP 3: Date & Time Slot -->
                 <div class="step-content" id="step-3">
                     <h3 style="margin-top:0;">Step 3: Schedule Slot</h3>
                     <div class="form-group">
@@ -637,7 +620,6 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 </div>
 
-                <!-- STEP 4: Payment Method & Proof Upload -->
                 <div class="step-content" id="step-4">
                     <h3 style="margin-top:0;">Step 4: Payment Method & Proof</h3>
                     
