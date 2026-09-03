@@ -27,26 +27,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <style>
-        .booking-container { max-width: 800px; margin: 40px auto; padding: 0 20px; font-family: 'Inter', sans-serif; }
-        .step-header { text-align: center; margin-bottom: 25px; }
-        .selected-pkg-bar { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-
-        .calendar-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
-        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .cal-header h3 { margin: 0; font-size: 1.1rem; }
-        .cal-nav { background: none; border: 1px solid #ddd; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
-        .cal-day-label { font-size: 0.8rem; font-weight: 700; color: #888; padding-bottom: 8px; }
-        .cal-date { height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid #f0f0f0; font-size: 0.9rem; cursor: pointer; transition: 0.15s; }
-        .cal-date:hover:not(.disabled) { border-color: #111; background: #fafafa; }
-        .cal-date.selected { background: #111 !important; color: #fff !important; border-color: #111 !important; }
-        .cal-date.disabled { background: #f5f5f5; color: #ccc; cursor: not-allowed; text-decoration: line-through; border-color: transparent; }
-
-        .slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 15px; }
-        .slot-btn { padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #fff; text-align: center; cursor: pointer; font-size: 0.88rem; font-weight: 500; }
-        .slot-btn.selected { background: #111; color: #fff; border-color: #111; }
-    </style>
 </head>
 <body>
 
@@ -54,16 +34,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="booking-container">
         <div class="step-header">
-            <p style="text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; font-weight: 700; color: #888;">Step 2 of 4</p>
+            <p class="booking-step-label">Step 2 of 4</p>
             <h1>Select Date & Time Slot</h1>
         </div>
 
         <div class="selected-pkg-bar">
             <div>
                 <strong><?= htmlspecialchars($pkg['name']) ?></strong> 
-                <span style="color: #666; font-size: 0.9rem;">(₱<?= number_format($pkg['price'], 0) ?> · <?= $pkg['slot_minutes'] ?>-min slots)</span>
+                <span class="selected-pkg-meta">(₱<?= number_format($pkg['price'], 0) ?> · <?= $pkg['slot_minutes'] ?>-min slots)</span>
             </div>
-            <a href="booking.php" style="font-size: 0.85rem; color: #666; text-decoration: underline;">Change Package</a>
+            <a href="booking.php" class="change-package-link">Change Package</a>
         </div>
 
         <form method="POST">
@@ -79,12 +59,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="cal-grid" id="calendar_days"></div>
             </div>
 
-            <div class="calendar-card" id="time_section" style="display: none;">
-                <h3 style="margin-top: 0; font-size: 1.05rem;">Available Time Slots (10:00 AM – 7:00 PM)</h3>
+            <div class="calendar-card" id="time_section">
+                <h3 class="time-section-title">Available Time Slots (10:00 AM – 7:00 PM)</h3>
                 <div class="slot-grid" id="slots_container"></div>
             </div>
 
-            <button type="submit" id="next_btn" class="btn-primary full-width" style="padding: 14px; border-radius: 8px; margin-top: 10px;" disabled>Proceed to Customization &rarr;</button>
+            <button type="submit" id="next_btn" class="btn-primary full-width booking-next-button" disabled>Proceed to Customization &rarr;</button>
         </form>
     </div>
 
@@ -155,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         function generateTimeSlots() {
             const container = document.getElementById('slots_container');
             container.innerHTML = '';
-            document.getElementById('time_section').style.display = 'block';
+            document.getElementById('time_section').classList.add('is-visible');
 
             let start = 10 * 60;
             let end = 19 * 60;

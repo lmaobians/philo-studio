@@ -140,293 +140,13 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
     
-    <style>
-        :root {
-            --bg-light: #f3eee8;
-            --card-bg: #ffffff;
-            --primary-color: #cb6b5c;
-            --primary-hover: #b05749;
-            --text-dark: #332b28;
-            --text-muted: #5e5652;
-            --border-color: #e5ded7;
-            --font-heading: 'Playfair Display', serif;
-            --font-body: 'Inter', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-light);
-            font-family: var(--font-body);
-            color: var(--text-dark);
-            margin: 0;
-            padding: 0;
-        }
-
-        h1, h2, h3, h4 {
-            font-family: var(--font-heading);
-            color: var(--text-dark);
-        }
-
-        .admin-nav {
-            background: var(--card-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 14px 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .admin-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .admin-brand img {
-            height: 38px;
-            width: auto;
-            object-fit: contain;
-        }
-
-        .admin-brand span {
-            font-weight: 700;
-            letter-spacing: 1.5px;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            border-left: 1px solid var(--border-color);
-            padding-left: 12px;
-            color: var(--text-muted);
-        }
-
-        .btn-logout {
-            color: var(--text-dark);
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 600;
-            padding: 8px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            background: var(--card-bg);
-            transition: all 0.2s ease;
-        }
-
-        .btn-logout:hover {
-            background: var(--primary-color);
-            color: #fff;
-            border-color: var(--primary-color);
-        }
-
-        .admin-container {
-            max-width: 1200px;
-            margin: 36px auto;
-            padding: 0 24px;
-        }
-
-        .action-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .action-bar h1 {
-            margin: 0;
-            font-size: 1.8rem;
-        }
-
-        .btn-create {
-            background: var(--primary-color);
-            color: #ffffff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .btn-create:hover { 
-            background: var(--primary-hover); 
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-bottom: 32px;
-        }
-
-        .stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
-        }
-
-        .stat-card .label {
-            text-transform: uppercase;
-            font-size: 0.72rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-
-        .stat-card .val {
-            font-size: 2.2rem;
-            font-family: var(--font-heading);
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-
-        .table-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 28px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.88rem;
-        }
-
-        th {
-            text-align: left;
-            padding: 12px 16px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        td {
-            padding: 16px;
-            border-bottom: 1px solid var(--border-color);
-            vertical-align: top;
-        }
-
-        .badge-status {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .status-pending { background: #fef3c7; color: #92400e; }
-        .status-confirmed { background: #d1fae5; color: #065f46; }
-        .status-cancelled { background: #fee2e2; color: #991b1b; }
-
-        .btn-act {
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-approve { background: var(--primary-color); color: #fff; }
-        .btn-approve:hover { background: var(--primary-hover); }
-
-        .btn-cancel { background: transparent; color: #dc2626; border: 1px solid #fee2e2; }
-        .btn-cancel:hover { background: #fee2e2; }
-
-        .btn-delete { background: #fee2e2; color: #dc2626; margin-left: 4px; }
-
-        .alert-toast {
-            background: var(--text-dark);
-            color: #ffffff;
-            padding: 14px 20px;
-            border-radius: 8px;
-            margin-bottom: 24px;
-            font-size: 0.88rem;
-        }
-
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(51, 43, 40, 0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            width: 100%;
-            max-width: 580px;
-            padding: 32px;
-            border-radius: 12px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .step-indicators {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 24px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 12px;
-        }
-
-        .step-pill {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-
-        .step-pill.active {
-            color: var(--primary-color);
-        }
-
-        .step-content { display: none; }
-        .step-content.active { display: block; }
-
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-dark); margin-bottom: 6px; }
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-family: var(--font-body);
-        }
-
-        .payment-methods-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .payment-option {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px;
-            cursor: pointer;
-            text-align: center;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        .payment-option input { display: none; }
-        .payment-option.selected {
-            border-color: var(--primary-color);
-            background: #faf2f0;
-            color: var(--primary-color);
-        }
-    </style>
+    <link rel="stylesheet" href="../style.css">
 </head>
-<body>
+<body class="admin-page">
 
     <nav class="admin-nav">
         <div class="admin-brand">
-            <img src="../header-logo.jpg" alt="PHILO Studio Logo" onerror="this.style.display='none'">
+            <img src="../header-logo.jpg" alt="PHILO Studio Logo" onerror="this.classList.add('is-hidden')">
             <span>ADMIN CONTROL CENTER</span>
         </div>
         <a href="logout.php" class="btn-logout">Log Out</a>
@@ -452,11 +172,11 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
             <div class="stat-card">
                 <div class="label">Pending Review</div>
-                <div class="val" style="color: #cb6b5c;"><?= $pending_count ?></div>
+                <div class="val admin-pending-value"><?= $pending_count ?></div>
             </div>
             <div class="stat-card">
                 <div class="label">Confirmed</div>
-                <div class="val" style="color: #059669;"><?= $confirmed_count ?></div>
+                <div class="val admin-confirmed-value"><?= $confirmed_count ?></div>
             </div>
         </div>
 
@@ -474,30 +194,30 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </thead>
                 <tbody>
                     <?php if (empty($bookings)): ?>
-                        <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px 0;">No booking entries found.</td></tr>
+                        <tr><td colspan="6" class="admin-empty-state">No booking entries found.</td></tr>
                     <?php else: ?>
                         <?php foreach ($bookings as $b): ?>
                             <tr>
                                 <td><strong><?= htmlspecialchars($b['booking_reference'] ?: 'BK-'.$b['booking_id']) ?></strong></td>
                                 <td>
                                     <strong><?= htmlspecialchars($b['full_name'] ?: 'Client') ?></strong><br>
-                                    <span style="color: var(--text-muted); font-size: 0.8rem;"><?= htmlspecialchars($b['email'] ?: 'N/A') ?></span><br>
-                                    <span style="color: var(--text-muted); font-size: 0.8rem;"><?= htmlspecialchars($b['phone'] ?: 'N/A') ?></span>
+                                    <span class="admin-detail"><?= htmlspecialchars($b['email'] ?: 'N/A') ?></span><br>
+                                    <span class="admin-detail"><?= htmlspecialchars($b['phone'] ?: 'N/A') ?></span>
                                 </td>
                                 <td>
                                     <strong><?= htmlspecialchars($b['package_name']) ?></strong> (₱<?= number_format($b['package_price'], 0) ?>)<br>
-                                    <span style="color: var(--text-muted); font-size: 0.8rem;">
+                                    <span class="admin-detail">
                                         📅 <?= date('M d, Y', strtotime($b['schedule_date'])) ?> &nbsp;|&nbsp; ⏰ <?= date('g:i A', strtotime($b['schedule_time'])) ?>
                                     </span>
                                     <?php if (!empty($b['notes'])): ?>
-                                        <br><span style="font-size:0.75rem; color:#888;"><?= htmlspecialchars($b['notes']) ?></span>
+                                        <br><span class="admin-note"><?= htmlspecialchars($b['notes']) ?></span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
                                     <?php if (!empty($b['payment_proof'])): ?>
-                                        <a href="../<?= htmlspecialchars($b['payment_proof']) ?>" target="_blank" style="color: var(--primary-color); font-weight:600; font-size:0.8rem;">View Proof &rarr;</a>
+                                        <a href="../<?= htmlspecialchars($b['payment_proof']) ?>" target="_blank" class="admin-proof-link">View Proof &rarr;</a>
                                     <?php else: ?>
-                                        <span style="color: #aaa; font-size: 0.8rem;">None</span>
+                                        <span class="admin-none">None</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
@@ -506,7 +226,7 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     </span>
                                 </td>
                                 <td>
-                                    <form method="POST" style="display:inline-block;">
+                                    <form method="POST" class="admin-inline-block">
                                         <input type="hidden" name="action" value="update_status">
                                         <input type="hidden" name="booking_id" value="<?= $b['booking_id'] ?>">
                                         <?php if ($b['booking_status'] !== 'Confirmed'): ?>
@@ -517,7 +237,7 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <?php endif; ?>
                                     </form>
 
-                                    <form method="POST" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to delete this booking?');">
+                                    <form method="POST" class="admin-inline-block" onsubmit="return confirm('Are you sure you want to delete this booking?');">
                                         <input type="hidden" name="action" value="delete_booking">
                                         <input type="hidden" name="booking_id" value="<?= $b['booking_id'] ?>">
                                         <button type="submit" class="btn-act btn-delete">Delete</button>
@@ -546,7 +266,7 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <input type="hidden" name="action" value="create_booking">
 
                 <div class="step-content active" id="step-1">
-                    <h3 style="margin-top:0;">Step 1: Client & Package Selection</h3>
+                    <h3 class="admin-step-title">Step 1: Client & Package Selection</h3>
                     <div class="form-group">
                         <label>Client Full Name</label>
                         <input type="text" name="full_name" required placeholder="e.g. Maria Clara">
@@ -567,13 +287,13 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div style="text-align:right; margin-top:20px;">
+                    <div class="admin-right-action">
                         <button type="button" class="btn-create" onclick="goToStep(2)">Next: Customization &rarr;</button>
                     </div>
                 </div>
 
                 <div class="step-content" id="step-2">
-                    <h3 style="margin-top:0;">Step 2: Customization & Add-ons</h3>
+                    <h3 class="admin-step-title">Step 2: Customization & Add-ons</h3>
                     <div class="form-group">
                         <label>Backdrop Color</label>
                         <select name="backdrop">
@@ -585,23 +305,23 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </select>
                     </div>
                     <div class="form-group">
-                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                        <label class="admin-pet-label">
                             <input type="checkbox" name="has_pets" id="has_pets" onchange="togglePetDetails()">
-                            Client bringing pets? <span style="color:#059669; font-weight:700;">(Free of Charge)</span>
+                            Client bringing pets? <span class="admin-free-label">(Free of Charge)</span>
                         </label>
                     </div>
-                    <div class="form-group" id="pet_box" style="display:none;">
+                    <div class="form-group admin-pet-box" id="pet_box">
                         <label>Pet Details (Breed / Count)</label>
                         <input type="text" name="pet_details" placeholder="e.g. 1 Golden Retriever, 2 Cats">
                     </div>
-                    <div style="display:flex; justify-content:space-between; margin-top:20px;">
-                        <button type="button" onclick="goToStep(1)" style="padding:10px 16px; border:1px solid var(--border-color); background:#fff; border-radius:6px;">&larr; Back</button>
+                    <div class="admin-form-actions">
+                        <button type="button" onclick="goToStep(1)" class="admin-back-button">&larr; Back</button>
                         <button type="button" class="btn-create" onclick="goToStep(3)">Next: Schedule &rarr;</button>
                     </div>
                 </div>
 
                 <div class="step-content" id="step-3">
-                    <h3 style="margin-top:0;">Step 3: Schedule Slot</h3>
+                    <h3 class="admin-step-title">Step 3: Schedule Slot</h3>
                     <div class="form-group">
                         <label>Schedule Date</label>
                         <input type="date" name="schedule_date" required value="<?= date('Y-m-d') ?>">
@@ -614,16 +334,16 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <label>Additional Session Notes</label>
                         <textarea name="notes" rows="2" placeholder="Special requests..."></textarea>
                     </div>
-                    <div style="display:flex; justify-content:space-between; margin-top:20px;">
-                        <button type="button" onclick="goToStep(2)" style="padding:10px 16px; border:1px solid var(--border-color); background:#fff; border-radius:6px;">&larr; Back</button>
+                    <div class="admin-form-actions">
+                        <button type="button" onclick="goToStep(2)" class="admin-back-button">&larr; Back</button>
                         <button type="button" class="btn-create" onclick="goToStep(4)">Next: Payment &rarr;</button>
                     </div>
                 </div>
 
                 <div class="step-content" id="step-4">
-                    <h3 style="margin-top:0;">Step 4: Payment Method & Proof</h3>
+                    <h3 class="admin-step-title">Step 4: Payment Method & Proof</h3>
                     
-                    <label style="font-weight:600; font-size:0.82rem; display:block; margin-bottom:8px;">Select Payment Method</label>
+                    <label class="admin-payment-label">Select Payment Method</label>
                     <div class="payment-methods-grid">
                         <div class="payment-option selected" onclick="selectPayment('cash', this)">
                             <input type="radio" name="payment_method" value="cash" checked> 💵 Cash (On-Site)
@@ -639,14 +359,14 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </div>
                     </div>
 
-                    <div class="form-group" id="proof_upload_group" style="display:none; background:#faf2f0; padding:12px; border-radius:8px; border:1px solid var(--border-color);">
-                        <label style="color:var(--primary-color);">Upload Payment Receipt / Proof</label>
+                    <div class="form-group admin-proof-group" id="proof_upload_group">
+                        <label>Upload Payment Receipt / Proof</label>
                         <input type="file" name="payment_proof" accept="image/*,.pdf">
-                        <span style="font-size:0.75rem; color:var(--text-muted);">Required for GCash, BDO, or GoTyme walk-ins.</span>
+                        <span class="admin-proof-help">Required for GCash, BDO, or GoTyme walk-ins.</span>
                     </div>
 
-                    <div style="display:flex; justify-content:space-between; margin-top:24px;">
-                        <button type="button" onclick="goToStep(3)" style="padding:10px 16px; border:1px solid var(--border-color); background:#fff; border-radius:6px;">&larr; Back</button>
+                    <div class="admin-form-actions payment-actions">
+                        <button type="button" onclick="goToStep(3)" class="admin-back-button">&larr; Back</button>
                         <button type="submit" class="btn-create">Complete Walk-In Booking</button>
                     </div>
                 </div>
@@ -657,11 +377,11 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <script>
         function openModal() { 
-            document.getElementById('createModal').style.display = 'flex'; 
+            document.getElementById('createModal').classList.add('is-visible');
             goToStep(1);
         }
         function closeModal() { 
-            document.getElementById('createModal').style.display = 'none'; 
+            document.getElementById('createModal').classList.remove('is-visible');
         }
 
         function goToStep(step) {
@@ -674,7 +394,7 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         function togglePetDetails() {
             const hasPets = document.getElementById('has_pets').checked;
-            document.getElementById('pet_box').style.display = hasPets ? 'block' : 'none';
+            document.getElementById('pet_box').classList.toggle('is-visible', hasPets);
         }
 
         function selectPayment(method, el) {
@@ -684,9 +404,9 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             const proofGroup = document.getElementById('proof_upload_group');
             if (method === 'cash') {
-                proofGroup.style.display = 'none';
+                proofGroup.classList.remove('is-visible');
             } else {
-                proofGroup.style.display = 'block';
+                proofGroup.classList.add('is-visible');
             }
         }
     </script>

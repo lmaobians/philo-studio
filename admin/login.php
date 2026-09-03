@@ -49,20 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login | PHILO Studio</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { background: #1a1a1a; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .login-card { background: #ffffff; width: 100%; max-width: 380px; padding: 36px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-        h2 { font-size: 1.4rem; font-weight: 700; color: #111; margin: 0 0 6px 0; text-align: center; }
-        .subtitle { color: #666; font-size: 0.85rem; text-align: center; margin-bottom: 24px; }
-        .form-group { margin-bottom: 18px; }
-        label { font-size: 0.85rem; font-weight: 600; color: #333; display: block; margin-bottom: 6px; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box; outline: none; }
-        .btn-submit { width: 100%; background: #111; color: #fff; border: none; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; margin-top: 10px; }
-        .btn-submit:hover { background: #333; }
-        .alert-error { background: #fee2e2; color: #dc2626; padding: 10px; border-radius: 6px; font-size: 0.85rem; margin-bottom: 16px; text-align: center; word-break: break-word; }
-    </style>
+    <link rel="stylesheet" href="../style.css">
 </head>
-<body>
+<body class="admin-login-page">
 
 <div class="login-card">
     <h2>PHILO Studio</h2>

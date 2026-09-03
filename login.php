@@ -16,15 +16,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $database = new Database();
         $db = $database->getConnection();
 
-// Change 'password' to your actual database column name (e.g., password_hash)
         $stmt = $db->prepare("SELECT customer_id, full_name AS name, email, password_hash AS password FROM customers WHERE email = ? LIMIT 1");        $stmt->execute([$email]);
         $user = $stmt->fetch();
 
         if (!$user) {
-            // Email not found in the database
             $error = 'No account found with this email. Please create an account first.';
         } elseif (password_verify($password, $user['password'])) {
-            // Credentials correct
             $_SESSION['customer_id']    = $user['customer_id'];
             $_SESSION['customer_name']  = $user['name'];
             $_SESSION['customer_email'] = $user['email'];
@@ -32,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: " . $redirect);
             exit();
         } else {
-            // Email exists, but password was incorrect
             $error = 'Incorrect password. Please try again.';
         }
     } else {

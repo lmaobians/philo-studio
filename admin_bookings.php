@@ -12,10 +12,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['booking_id'], $_POST[
 }
 
 $query = "SELECT b.*, c.full_name, c.email, c.phone, p.name as package_name, p.price 
-          FROM bookings b
-          JOIN customers c ON b.customer_id = c.customer_id
-          JOIN packages p ON b.package_id = p.package_id
-          ORDER BY b.booking_id DESC";
+            FROM bookings b
+            JOIN customers c ON b.customer_id = c.customer_id
+            JOIN packages p ON b.package_id = p.package_id
+            ORDER BY b.booking_id DESC";
 $stmt = $db->prepare($query);
 $stmt->execute();
 $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -26,23 +26,12 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <title>Admin Dashboard | PHILO Studio</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #f7f7f8; padding: 40px; }
-        .admin-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.04); }
-        .admin-table th, .admin-table td { padding: 14px 16px; text-align: left; font-size: 0.88rem; border-bottom: 1px solid #eee; }
-        .admin-table th { background: #fafafa; font-weight: 600; color: #444; }
-        .badge { padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
-        .badge-Pending { background: #fef3c7; color: #d97706; }
-        .badge-Confirmed { background: #dcfce7; color: #15803d; }
-        .badge-Cancelled { background: #fee2e2; color: #b91c1c; }
-        .proof-btn { color: #2563eb; text-decoration: underline; font-weight: 500; }
-        .action-select { padding: 6px 10px; border-radius: 6px; border: 1px solid #ccc; font-size: 0.82rem; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="legacy-admin-page">
 
     <h2>Manage Bookings</h2>
-    <?php if (isset($msg)) echo "<p style='color: green;'>$msg</p>"; ?>
+    <?php if (isset($msg)) echo "<p class='admin-message'>$msg</p>"; ?>
 
     <table class="admin-table">
         <thead>
@@ -68,17 +57,17 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <?= htmlspecialchars($b['package_name']) ?> (₱<?= number_format($b['price'], 0) ?>)<br>
                     <small><?= htmlspecialchars($b['schedule_date']) ?> @ <?= date("g:i A", strtotime($b['schedule_time'])) ?></small>
                 </td>
-                <td style="max-width: 250px; font-size: 0.8rem; color: #555;"><?= htmlspecialchars($b['notes']) ?></td>
+                <td class="admin-notes"><?= htmlspecialchars($b['notes']) ?></td>
                 <td>
                     <?php if (!empty($b['payment_proof'])): ?>
                         <a href="<?= htmlspecialchars($b['payment_proof']) ?>" target="_blank" class="proof-btn">View Receipt</a>
                     <?php else: ?>
-                        <span style="color: #999;">None</span>
+                        <span class="admin-muted">None</span>
                     <?php endif; ?>
                 </td>
                 <td><span class="badge badge-<?= $b['booking_status'] ?>"><?= $b['booking_status'] ?></span></td>
                 <td>
-                    <form method="POST" style="display:inline;">
+                    <form method="POST" class="admin-inline-form">
                         <input type="hidden" name="booking_id" value="<?= $b['booking_id'] ?>">
                         <select name="status" class="action-select" onchange="this.form.submit()">
                             <option value="Pending" <?= $b['booking_status'] === 'Pending' ? 'selected' : '' ?>>Pending</option>

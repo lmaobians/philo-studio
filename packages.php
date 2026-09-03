@@ -4,17 +4,14 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 require_once 'config/database.php';
 
-// Initialize Database Connection
 $database = new Database();
 $db = $database->getConnection();
 
-// Fetch active packages sorted by category and price
 $query = "SELECT * FROM packages WHERE status = 'active' ORDER BY category ASC, price ASC";
 $stmt = $db->prepare($query);
 $stmt->execute();
 $all_packages = $stmt->fetchAll();
 
-// Group packages dynamically by category
 $categorized_packages = [];
 foreach ($all_packages as $pkg) {
     $categorized_packages[$pkg['category']][] = $pkg;

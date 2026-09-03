@@ -1,0 +1,5 @@
+# Ignore uploaded payment proofs and test images
+uploads/*
+
+# Keep the uploads directory structure on Git
+!uploads/.gitkeep
