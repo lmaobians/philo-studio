@@ -12,7 +12,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <nav class="nav-links">
         <a href="philostudio.php" class="<?= ($current_page == 'philostudio.php') ? 'active' : '' ?>">Home</a>
         <a href="packages.php" class="<?= ($current_page == 'packages.php') ? 'active' : '' ?>">Packages</a>
-        <a href="#gallery">Gallery</a>
+        <a href="gallery.php">Gallery</a>
         <a href="#about">About</a>
         <a href="#faq">FAQ</a>
         <a href="#contact">Contact</a>

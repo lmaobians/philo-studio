@@ -154,6 +154,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <li><strong>Payment Policy:</strong> We allow up to one (1) hour for payment to secure your booking slot.</li>
                     <li><strong>Grace Period:</strong> We strictly observe a 10-minute grace period per client.</li>
                 </ul>
+
+                <strong class="policy-heading">Please note:</strong>
+                <ul class="policy-list">
+                    <li>The Maximum number of pax depends on your package. Any additional head will be for ₱100.00 each.</li>
+                    <li>Children 2 years old and below are free.</li>
+                    <li>Each slot shall be treated as 1 slot. Not an accumulated slot. This is to provide ample time for the equipment, especially the strobes, to cool down.</li>
+                </ul>
+                <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem; font-style: italic;">
+                    * You may pay for the add-ons with your chosen package or at the studio on the day of your photo session.
+                </p>
             </div>
 
             <form method="POST" enctype="multipart/form-data">

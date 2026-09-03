@@ -52,53 +52,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_package_id']))
     <title>Select Package | PHILO Studio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <?php include 'includes/header.php'; ?>
 
-    <div class="booking-container">
-        <div class="step-header">
+    <section class="packages-page-container booking-container" id="packages-display">
+        <div class="step-header" style="text-align: center; margin-bottom: 2rem;">
             <p class="booking-step-label">Step 1 of 4</p>
             <h1>Choose Your Experience</h1>
             <p>Select a photography package to proceed to date & scheduling</p>
         </div>
 
-        <div class="chip-nav">
+        <div class="chip-nav" style="margin-bottom: 2.5rem; text-align: center;">
             <?php foreach ($categorized_packages as $cat => $pkgs): ?>
                 <a href="#cat-<?= md5($cat) ?>" class="chip"><?= htmlspecialchars($cat) ?></a>
             <?php endforeach; ?>
         </div>
 
-        <?php foreach ($categorized_packages as $cat => $pkgs): ?>
-            <div class="category-section" id="cat-<?= md5($cat) ?>">
-                <div class="category-title"><?= htmlspecialchars($cat) ?></div>
-                <div class="grid-2col">
-                    <?php foreach ($pkgs as $pkg): ?>
-                        <div class="pkg-card">
-                            <img src="<?= htmlspecialchars($pkg['image_url'] ?: 'images/solo-package.jpg') ?>" alt="Package Image" class="pkg-img">
-                            <div class="pkg-content">
-                                <div>
-                                    <div class="pkg-head">
-                                        <h3><?= htmlspecialchars($pkg['name']) ?></h3>
-                                        <span class="pkg-price">₱<?= number_format($pkg['price'], 0) ?></span>
-                                    </div>
-                                    <span class="pkg-badge">⏱ <?= htmlspecialchars($pkg['duration']) ?></span>
-                                    <div class="pkg-desc"><?= htmlspecialchars($pkg['inclusions']) ?></div>
+        <?php foreach ($categorized_packages as $category_name => $packages_list): ?>
+            <div class="category-block" id="cat-<?= md5($category_name) ?>">
+                <p class="category-subtitle-label"><?= strtoupper(htmlspecialchars($category_name)) ?></p>
+                <div class="packages-page-grid">
+                    
+                    <?php foreach ($packages_list as $pkg): ?>
+                        <div class="package-card">
+                            <div class="card-image-wrap">
+                                <img src="<?= htmlspecialchars($pkg['image_url'] ?: 'images/solo-package.jpg') ?>" alt="<?= htmlspecialchars($pkg['name']) ?>">
+                                <span class="img-badge">
+                                    <?= htmlspecialchars($pkg['duration']) ?> · 
+                                    <?= $pkg['min_pax'] == $pkg['max_pax'] ? $pkg['max_pax'] . ' person' : $pkg['min_pax'] . '–' . $pkg['max_pax'] . ' people' ?>
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <div class="card-head">
+                                    <h3><?= htmlspecialchars($pkg['name']) ?></h3>
+                                    <span class="price">₱<?= number_format($pkg['price'], 0) ?></span>
                                 </div>
+                                <p class="package-tagline"><?= htmlspecialchars($pkg['category']) ?></p>
+                                <p class="package-desc-text"><?= htmlspecialchars($pkg['inclusions']) ?></p>
+                                
                                 <form method="POST">
                                     <input type="hidden" name="select_package_id" value="<?= $pkg['package_id'] ?>">
-                                    <button type="submit" class="btn-primary full-width package-select-button">Select Package &rarr;</button>
+                                    <button type="submit" class="btn-primary full-width">Select Package &rarr;</button>
                                 </form>
                             </div>
                         </div>
                     <?php endforeach; ?>
+
                 </div>
             </div>
         <?php endforeach; ?>
-    </div>
+
+    </section>
 
 </body>
 </html>
