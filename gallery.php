@@ -18,9 +18,10 @@ if (session_status() === PHP_SESSION_NONE) {
 
     <?php include 'includes/header.php'; ?>
 
-    <section class="gallery-section" id="gallery">
-        <p class="subtitle">A GLIMPSE OF OUR WORK</p>
-        <h2 class="gallery-title">The Gallery</h2>
+    <section class="hero-section">
+        <p class="hero-subtitle">A GLIMPSE OF OUR WORK</p>
+        <h1 class="hero-title">Gallery</h1>
+    </section>
         
         <div class="gallery-masonry">
             <div class="gallery-item"><img src="images/gallery-1.jpg" alt="Gallery Photo 1"></div>
@@ -44,7 +45,6 @@ if (session_status() === PHP_SESSION_NONE) {
             <div class="gallery-item"><img src="images/gallery-19.jpg" alt="Gallery Photo 19"></div>
             <div class="gallery-item"><img src="images/gallery-20.jpg" alt="Gallery Photo 20"></div>
         </div>
-    </section>
 <?php include 'includes/footer.php'; ?>
 </body>
 </html>

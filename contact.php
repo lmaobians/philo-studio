@@ -25,10 +25,10 @@
         </div>
     <?php endif; ?>
 
-    <section class="contact-hero">
-        <p class="subtitle">GET IN TOUCH</p>
-        <h1>Let’s capture your moments.</h1>
-        <p class="description">Have questions about our studio packages or custom sessions? Send us a message and we’ll get back to you shortly.</p>
+    <section class="hero-section">
+        <p class="hero-subtitle">GET IN TOUCH</p>
+        <h1 class="hero-title">Contact Us</h1>
+        <p class="hero-description">Have questions about our studio packages or custom sessions? Send us a message and we’ll get back to you shortly.</p>
     </section>
 
     <section class="contact-container">

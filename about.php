@@ -18,10 +18,10 @@ if (session_status() === PHP_SESSION_NONE) {
 
     <?php include 'includes/header.php'; ?>
 
-    <section class="page-title-section text-center">
-        <p class="booking-step-label">OUR STORY & VISION</p>
-        <h1 class="page-title">PHILO STUDIO</h1>
-        <p class="page-subtitle">PHILO Studio is Dumagueteʼs first self-shoot studio. Providing a private and professionally equipped space where customers can take their photos.</p>
+    <section class="hero-section">
+        <p class="hero-subtitle">OUR STORY & VISION</p>
+        <h1 class="hero-title">Philo Studio</h1>
+        <p class="hero-description">PHILO Studio is Dumagueteʼs first self-shoot studio. Providing a private and professionally equipped space where customers can take their photos.</p>
     </section>
 
     <section class="about-container">

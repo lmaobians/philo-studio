@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_package_id']))
         <div class="step-header" style="text-align: center; margin-bottom: 2rem;">
             <p class="booking-step-label">OUR RATES & SERVICES</p>
             <h1 class="page-title">Choose Your Experience</h1>
-            <p class="page-subtitle">From quick solo portraits to full studio rentals, we have a package built for every moment.</p>
+            <p class="hero-description">From quick solo portraits to full studio rentals, we have a package built for every moment.</p>
         </div>
 
         <div class="chip-nav" style="margin-bottom: 2.5rem; text-align: center;">
