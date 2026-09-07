@@ -4,6 +4,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
+
+<link rel="stylesheet" href="style.css">
 <header class="navbar">
     <a href="philostudio.php" class="header-logo">
         <img src="images/header-logo.jpg" alt="Philo Studio Logo">
@@ -15,7 +17,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <a href="gallery.php">Gallery</a>
         <a href="about.php">About</a>
         <a href="#faq">FAQ</a>
-        <a href="#contact">Contact</a>
+        <a href="contact.php">Contact</a>
         <?php if (isset($_SESSION['customer_id'])): ?>
             <a href="dashboard.php" class="<?= ($current_page == 'dashboard.php') ? 'active' : '' ?>">My Account</a>
             <a href="logout.php">Logout</a>

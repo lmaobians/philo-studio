@@ -1,3 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | PHILO Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
 <?php include 'includes/header.php'; ?>
 
     <section class="contact-hero">
@@ -14,42 +28,49 @@
 
             <div class="info-list">
                 <div class="info-item">
-                    <i class="fa-solid fa-location-dot"></i>
+                    <div class="icon-wrapper">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
                     <div>
                         <strong>Location</strong>
-                        <p>123 Studio Street, Suite 402<br>Mandaue City, Cebu, Philippines</p>
+                        <p>Plaza Escano, 2nd Floor, beside Grab Food<br>Dumaguete City, Philippines</p>
                     </div>
                 </div>
 
                 <div class="info-item">
-                    <i class="fa-solid fa-clock"></i>
+                    <div class="icon-wrapper">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
                     <div>
                         <strong>Hours</strong>
-                        <p>Mon – Sun: 9:00 AM – 7:00 PM</p>
+                        <p>Tues – Sun: 10:00 AM – 7:00 PM</p>
                     </div>
                 </div>
 
                 <div class="info-item">
-                    <i class="fa-solid fa-envelope"></i>
+                    <div class="icon-wrapper">
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
                     <div>
                         <strong>Email</strong>
-                        <p>hello@philostudio.ph</p>
+                        <p>philo.studio@gmail.com</p>
                     </div>
                 </div>
 
                 <div class="info-item">
-                    <i class="fa-solid fa-phone"></i>
+                    <div class="icon-wrapper">
+                        <i class="fa-solid fa-phone"></i>
+                    </div>
                     <div>
                         <strong>Phone</strong>
-                        <p>+63 912 345 6789</p>
+                        <p>0956 876 6873</p>
                     </div>
                 </div>
             </div>
 
             <div class="social-links">
-                <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
-                <a href="#" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
-                <a href="#" class="social-icon"><i class="fa-brands fa-tiktok"></i></a>
+                <a href="https://www.instagram.com/philo.studioph/" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://www.facebook.com/profile.php?id=100087134534958" class="social-icon"><i class="fa-brands fa-facebook-f"></i></a>
             </div>
         </div>
 
