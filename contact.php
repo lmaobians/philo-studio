@@ -14,6 +14,17 @@
 
 <?php include 'includes/header.php'; ?>
 
+    <?php if (isset($_GET['status']) && $_GET['status'] === 'success'): ?>
+        <div id="toast-notification" class="toast-notification">
+            <i class="fa-solid fa-circle-check toast-icon"></i>
+            <div class="toast-text">
+                <strong>Message Sent!</strong>
+                <span>We'll get back to you shortly.</span>
+            </div>
+            <button class="toast-close" onclick="closeToast()">&times;</button>
+        </div>
+    <?php endif; ?>
+
     <section class="contact-hero">
         <p class="subtitle">GET IN TOUCH</p>
         <h1>Let’s capture your moments.</h1>
@@ -117,3 +128,23 @@
     </section>
 
 <?php include 'includes/footer.php'; ?>
+
+<script>
+    function closeToast() {
+        const toast = document.getElementById('toast-notification');
+        if (toast) {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const toast = document.getElementById('toast-notification');
+        if (toast) {
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => closeToast(), 5000);
+        }
+    });
+</script>
+</body>
+</html>

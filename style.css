@@ -2919,3 +2919,62 @@ footer {
         grid-template-columns: 1fr;
     }
 }
+
+.toast-notification {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #1e293b;
+    color: #ffffff;
+    padding: 14px 20px;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast-notification.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast-icon {
+    color: #22c55e;
+    font-size: 1.25rem;
+}
+
+.toast-text {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.875rem;
+}
+
+.toast-text strong {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.toast-text span {
+    color: #94a3b8;
+    font-size: 0.8rem;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.25rem;
+    cursor: pointer;
+    margin-left: 8px;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.toast-close:hover {
+    color: #ffffff;
+}
