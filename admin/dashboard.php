@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             if (!is_dir($upload_dir)) {
                 mkdir($upload_dir, 0777, true);
             }
-            $file_ext  = strtolower(pathinfo($_FILES['payment_proof']['name'], PATHINFO_EXTENSION));
+            $file_ext   = strtolower(pathinfo($_FILES['payment_proof']['name'], PATHINFO_EXTENSION));
             $file_name = 'walkin_proof_' . time() . '_' . uniqid() . '.' . $file_ext;
             $target_path = $upload_dir . $file_name;
 
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
         $full_notes = "Payment Method: " . strtoupper($pay_method);
         if (!empty($backdrop)) $full_notes .= " | Backdrop: " . $backdrop;
-        if ($has_pets) $full_notes .= " | Pets: Yes (Free) - " . ($pet_details ?: 'No details');
+        if ($has_pets) $full_notes .= " | Pets: Yes - " . ($pet_details ?: 'No details');
         if (!empty($notes)) $full_notes .= " | Notes: " . $notes;
 
         $booking_ref = 'BK-' . strtoupper(substr(uniqid(), -6));
@@ -135,11 +135,10 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | PHILO Studio</title>
+    <title>Booking Management | PHILO Studio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="../style.css">
 </head>
 <body class="admin-page">
@@ -161,43 +160,58 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php endif; ?>
 
         <div class="action-bar">
-            <h1>Booking Management</h1>
-            <button onclick="openModal()" class="btn-create">+ Create Walk-In Booking</button>
+            <h1 class="page-title-pink">Booking Management</h1>
+            <button onclick="openModal('createModal')" class="btn-create">+ Create Walk-In Booking</button>
         </div>
 
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="label">Total Reservations</div>
+                <div class="label">TOTAL RESERVATIONS</div>
                 <div class="val"><?= $total_bookings ?></div>
             </div>
             <div class="stat-card">
-                <div class="label">Pending Review</div>
+                <div class="label">PENDING REVIEW</div>
                 <div class="val admin-pending-value"><?= $pending_count ?></div>
             </div>
             <div class="stat-card">
-                <div class="label">Confirmed</div>
+                <div class="label">CONFIRMED</div>
                 <div class="val admin-confirmed-value"><?= $confirmed_count ?></div>
             </div>
         </div>
 
         <div class="table-card">
-            <table>
+            <table class="booking-table">
                 <thead>
                     <tr>
-                        <th>Ref</th>
-                        <th>Client Details</th>
-                        <th>Package & Slot</th>
-                        <th>Proof</th>
-                        <th>Status</th>
-                        <th>Actions (CRUD)</th>
+                        <th>REF</th>
+                        <th>CLIENT DETAILS</th>
+                        <th>PACKAGE & SLOT</th>
+                        <th>PROOF</th>
+                        <th>STATUS</th>
+                        <th class="text-right">ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($bookings)): ?>
                         <tr><td colspan="6" class="admin-empty-state">No booking entries found.</td></tr>
                     <?php else: ?>
-                        <?php foreach ($bookings as $b): ?>
-                            <tr>
+                        <?php foreach ($bookings as $b): 
+                            $jsonBooking = htmlspecialchars(json_encode([
+                                'id' => $b['booking_id'],
+                                'ref' => $b['booking_reference'] ?: 'BK-'.$b['booking_id'],
+                                'name' => $b['full_name'] ?: 'Client',
+                                'email' => $b['email'] ?: 'N/A',
+                                'phone' => $b['phone'] ?: 'N/A',
+                                'package' => $b['package_name'],
+                                'price' => number_format($b['package_price'], 0),
+                                'date' => date('M d, Y', strtotime($b['schedule_date'])),
+                                'time' => date('g:i A', strtotime($b['schedule_time'])),
+                                'notes' => $b['notes'] ?: 'None',
+                                'proof' => $b['payment_proof'] ? '../'.$b['payment_proof'] : null,
+                                'status' => $b['booking_status']
+                            ]), ENT_QUOTES, 'UTF-8');
+                        ?>
+                            <tr class="clickable-row" onclick="showBookingDetails(<?= $jsonBooking ?>)">
                                 <td><strong><?= htmlspecialchars($b['booking_reference'] ?: 'BK-'.$b['booking_id']) ?></strong></td>
                                 <td>
                                     <strong><?= htmlspecialchars($b['full_name'] ?: 'Client') ?></strong><br>
@@ -209,11 +223,8 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <span class="admin-detail">
                                         📅 <?= date('M d, Y', strtotime($b['schedule_date'])) ?> &nbsp;|&nbsp; ⏰ <?= date('g:i A', strtotime($b['schedule_time'])) ?>
                                     </span>
-                                    <?php if (!empty($b['notes'])): ?>
-                                        <br><span class="admin-note"><?= htmlspecialchars($b['notes']) ?></span>
-                                    <?php endif; ?>
                                 </td>
-                                <td>
+                                <td onclick="event.stopPropagation();">
                                     <?php if (!empty($b['payment_proof'])): ?>
                                         <a href="../<?= htmlspecialchars($b['payment_proof']) ?>" target="_blank" class="admin-proof-link">View Proof &rarr;</a>
                                     <?php else: ?>
@@ -225,23 +236,25 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <?= htmlspecialchars($b['booking_status']) ?>
                                     </span>
                                 </td>
-                                <td>
-                                    <form method="POST" class="admin-inline-block">
-                                        <input type="hidden" name="action" value="update_status">
-                                        <input type="hidden" name="booking_id" value="<?= $b['booking_id'] ?>">
-                                        <?php if ($b['booking_status'] !== 'Confirmed'): ?>
-                                            <button type="submit" name="status" value="Confirmed" class="btn-act btn-approve">Approve</button>
-                                        <?php endif; ?>
-                                        <?php if ($b['booking_status'] !== 'Cancelled'): ?>
-                                            <button type="submit" name="status" value="Cancelled" class="btn-act btn-cancel">Cancel</button>
-                                        <?php endif; ?>
-                                    </form>
+                                <td class="text-right" onclick="event.stopPropagation();">
+                                    <div class="action-btn-group">
+                                        <form method="POST" class="admin-inline">
+                                            <input type="hidden" name="action" value="update_status">
+                                            <input type="hidden" name="booking_id" value="<?= $b['booking_id'] ?>">
+                                            <?php if ($b['booking_status'] !== 'Confirmed'): ?>
+                                                <button type="submit" name="status" value="Confirmed" class="btn-act btn-approve">Approve</button>
+                                            <?php endif; ?>
+                                            <?php if ($b['booking_status'] !== 'Cancelled'): ?>
+                                                <button type="submit" name="status" value="Cancelled" class="btn-act btn-cancel">Cancel</button>
+                                            <?php endif; ?>
+                                        </form>
 
-                                    <form method="POST" class="admin-inline-block" onsubmit="return confirm('Are you sure you want to delete this booking?');">
-                                        <input type="hidden" name="action" value="delete_booking">
-                                        <input type="hidden" name="booking_id" value="<?= $b['booking_id'] ?>">
-                                        <button type="submit" class="btn-act btn-delete">Delete</button>
-                                    </form>
+                                        <form method="POST" class="admin-inline" onsubmit="return confirm('Are you sure you want to delete this booking?');">
+                                            <input type="hidden" name="action" value="delete_booking">
+                                            <input type="hidden" name="booking_id" value="<?= $b['booking_id'] ?>">
+                                            <button type="submit" class="btn-act btn-delete">Delete</button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -254,7 +267,11 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="modal-overlay" id="createModal">
         <div class="modal-card">
-            
+            <div class="modal-header">
+                <h2>Create Walk-In Reservation</h2>
+                <button type="button" class="btn-close" onclick="closeModal('createModal')">&times;</button>
+            </div>
+
             <div class="step-indicators">
                 <span class="step-pill active" id="ind-1">1. Customer & Pkg</span>
                 <span class="step-pill" id="ind-2">2. Customization</span>
@@ -375,13 +392,130 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-card modal-card-clean">
+            <div class="modal-header">
+                <h2>Reservation Details</h2>
+                <button type="button" class="btn-close" onclick="closeModal('detailModal')">&times;</button>
+            </div>
+            
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>Reference</label>
+                    <p id="det-ref" class="highlight-pink"></p>
+                </div>
+                <div class="detail-item">
+                    <label>Status</label>
+                    <p><span id="det-status" class="badge-status"></span></p>
+                </div>
+                <div class="detail-item">
+                    <label>Client Name</label>
+                    <p id="det-name"></p>
+                </div>
+                <div class="detail-item">
+                    <label>Contact Info</label>
+                    <p><span id="det-email"></span><br><span id="det-phone"></span></p>
+                </div>
+                <div class="detail-item">
+                    <label>Package</label>
+                    <p><span id="det-package"></span> (₱<span id="det-price"></span>)</p>
+                </div>
+                <div class="detail-item">
+                    <label>Date & Time</label>
+                    <p>📅 <span id="det-date"></span> | ⏰ <span id="det-time"></span></p>
+                </div>
+                <div class="detail-item full-width">
+                    <label>Notes & Add-ons</label>
+                    <div id="det-notes-tags" class="addons-tags-container"></div>
+                </div>
+                <div class="detail-item full-width" id="det-proof-container">
+                    <label>Payment Proof</label>
+                    <div id="det-proof-preview"></div>
+                </div>
+            </div>
+
+            <div class="modal-actions-footer">
+                <form method="POST" id="modal-approve-form" class="admin-inline">
+                    <input type="hidden" name="action" value="update_status">
+                    <input type="hidden" name="booking_id" id="modal-booking-id-1">
+                    <button type="submit" name="status" value="Confirmed" class="btn-act btn-approve btn-lg">Approve Reservation</button>
+                </form>
+
+                <form method="POST" id="modal-cancel-form" class="admin-inline">
+                    <input type="hidden" name="action" value="update_status">
+                    <input type="hidden" name="booking_id" id="modal-booking-id-2">
+                    <button type="submit" name="status" value="Cancelled" class="btn-act btn-cancel btn-lg">Cancel Reservation</button>
+                </form>
+
+                <form method="POST" class="admin-inline" onsubmit="return confirm('Delete this booking permanently?');">
+                    <input type="hidden" name="action" value="delete_booking">
+                    <input type="hidden" name="booking_id" id="modal-booking-id-3">
+                    <button type="submit" class="btn-act btn-delete btn-lg">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
-        function openModal() { 
-            document.getElementById('createModal').classList.add('is-visible');
-            goToStep(1);
+        function openModal(id) { 
+            document.getElementById(id).classList.add('is-visible');
         }
-        function closeModal() { 
-            document.getElementById('createModal').classList.remove('is-visible');
+        function closeModal(id) { 
+            document.getElementById(id).classList.remove('is-visible');
+        }
+
+        function showBookingDetails(b) {
+            document.getElementById('det-ref').innerText = b.ref;
+            document.getElementById('det-name').innerText = b.name;
+            document.getElementById('det-email').innerText = b.email;
+            document.getElementById('det-phone').innerText = b.phone;
+            document.getElementById('det-package').innerText = b.package;
+            document.getElementById('det-price').innerText = b.price;
+            document.getElementById('det-date').innerText = b.date;
+            document.getElementById('det-time').innerText = b.time;
+
+            const tagsContainer = document.getElementById('det-notes-tags');
+            tagsContainer.innerHTML = '';
+
+            if (b.notes && b.notes !== 'None') {
+                const items = b.notes.split('|');
+                items.forEach(item => {
+                    const parts = item.split(':');
+                    if (parts.length >= 2) {
+                        const key = parts[0].trim();
+                        const val = parts.slice(1).join(':').trim();
+                        
+                        const tag = document.createElement('div');
+                        tag.className = 'addon-tag';
+                        tag.innerHTML = `<span class="tag-key">${key}</span><span class="tag-val">${val}</span>`;
+                        tagsContainer.appendChild(tag);
+                    } else if (item.trim() !== '') {
+                        const tag = document.createElement('div');
+                        tag.className = 'addon-tag';
+                        tag.innerHTML = `<span class="tag-val">${item.trim()}</span>`;
+                        tagsContainer.appendChild(tag);
+                    }
+                });
+            } else {
+                tagsContainer.innerHTML = `<span class="admin-none">No notes or add-ons provided.</span>`;
+            }
+
+            const badge = document.getElementById('det-status');
+            badge.innerText = b.status;
+            badge.className = 'badge-status status-' + b.status.toLowerCase();
+
+            const proofDiv = document.getElementById('det-proof-preview');
+            if (b.proof) {
+                proofDiv.innerHTML = `<a href="${b.proof}" target="_blank" class="admin-proof-link">View Uploaded Proof Image &rarr;</a>`;
+            } else {
+                proofDiv.innerHTML = `<span class="admin-none">No payment proof uploaded</span>`;
+            }
+
+            document.getElementById('modal-booking-id-1').value = b.id;
+            document.getElementById('modal-booking-id-2').value = b.id;
+            document.getElementById('modal-booking-id-3').value = b.id;
+
+            openModal('detailModal');
         }
 
         function goToStep(step) {

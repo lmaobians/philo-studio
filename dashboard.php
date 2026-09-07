@@ -67,7 +67,7 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <h1 class="dashboard-user-name"><?= htmlspecialchars($user_name) ?></h1>
                 <p class="dashboard-user-email"><?= htmlspecialchars($user_email) ?></p>
             </div>
-            <a href="booking.php" class="btn-primary dashboard-book-button">BOOK NEW SESSION</a>
+            <a href="packages.php" class="btn-primary dashboard-book-button">BOOK NEW SESSION</a>
         </div>
 
         <div class="dashboard-card customer-bookings-card">
@@ -76,7 +76,7 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php if (empty($bookings)): ?>
                 <div class="empty-state customer-empty-state">
                     <p>You have no bookings yet.</p>
-                    <a href="booking.php" class="explore-packages-link">Explore packages &rarr;</a>
+                    <a href="packages.php" class="explore-packages-link">Explore packages &rarr;</a>
                 </div>
             <?php else: ?>
                 <div class="booking-list customer-booking-list">

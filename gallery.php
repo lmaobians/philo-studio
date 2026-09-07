@@ -45,6 +45,6 @@ if (session_status() === PHP_SESSION_NONE) {
             <div class="gallery-item"><img src="images/gallery-20.jpg" alt="Gallery Photo 20"></div>
         </div>
     </section>
-
+<?php include 'includes/footer.php'; ?>
 </body>
 </html>

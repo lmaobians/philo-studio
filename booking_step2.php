@@ -41,9 +41,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="selected-pkg-bar">
             <div>
                 <strong><?= htmlspecialchars($pkg['name']) ?></strong> 
-                <span class="selected-pkg-meta">(₱<?= number_format($pkg['price'], 0) ?> · <?= $pkg['slot_minutes'] ?>-min slots)</span>
+                <span class="selected-pkg-meta">(₱<?= number_format($pkg['price'], 0) ?>)</span>
             </div>
-            <a href="booking.php" class="change-package-link">Change Package</a>
+            <a href="packages.php" class="change-package-link">Change Package</a>
         </div>
 
         <form method="POST">
@@ -52,15 +52,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="calendar-card">
                 <div class="cal-header">
-                    <button type="button" class="cal-nav" onclick="changeMonth(-1)">&lt; Prev</button>
+                    <button type="button" class="cal-nav" onclick="changeMonth(-1)">Prev</button>
                     <h3 id="calendar_month_year"></h3>
-                    <button type="button" class="cal-nav" onclick="changeMonth(1)">Next &gt;</button>
+                    <button type="button" class="cal-nav" onclick="changeMonth(1)">Next</button>
                 </div>
                 <div class="cal-grid" id="calendar_days"></div>
             </div>
 
             <div class="calendar-card" id="time_section">
-                <h3 class="time-section-title">Available Time Slots (10:00 AM – 7:00 PM)</h3>
+                <h3 class="time-section-title">Available Time Slots (10:00 AM – 8:00 PM)</h3>
                 <div class="slot-grid" id="slots_container"></div>
             </div>
 
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script>
-        const slotMinutes = <?= (int)$pkg['slot_minutes'] ?>;
+        const slotMinutes = 60;
         let currentDate = new Date();
         let selectedDateStr = '';
 
@@ -136,11 +136,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const container = document.getElementById('slots_container');
             container.innerHTML = '';
             document.getElementById('time_section').classList.add('is-visible');
+            document.getElementById('next_btn').disabled = true;
+            document.getElementById('schedule_time').value = '';
+
+            const now = new Date();
+            const todayFormatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const isToday = (selectedDateStr === todayFormatted);
+            const currentMinutesNow = (now.getHours() * 60) + now.getMinutes();
 
             let start = 10 * 60;
-            let end = 19 * 60;
+            let end = 20 * 60;
+            let availableSlotsCount = 0;
 
-            while (start + slotMinutes <= end) {
+            while (start < end) {
+                if (isToday && start <= currentMinutesNow) {
+                    start += slotMinutes;
+                    continue;
+                }
+
                 let hours = Math.floor(start / 60);
                 let minutes = start % 60;
                 let displayHours = hours % 12 || 12;
@@ -159,7 +172,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 };
 
                 container.appendChild(btn);
+                availableSlotsCount++;
                 start += slotMinutes;
+            }
+
+            if (availableSlotsCount === 0) {
+                container.innerHTML = '<p style="grid-column: 1 / -1; color: #721c24; background: #f8d7da; padding: 12px; border-radius: 8px; font-size: 0.9rem;">No available time slots remaining for today. Please select another date.</p>';
             }
         }
 

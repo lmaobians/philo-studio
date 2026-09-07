@@ -11,9 +11,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
     <nav class="nav-links">
         <a href="philostudio.php" class="<?= ($current_page == 'philostudio.php') ? 'active' : '' ?>">Home</a>
-        <a href="packages.php" class="<?= ($current_page == 'packages.php') ? 'active' : '' ?>">Packages</a>
+        <a href="packages.php" class="<?= ($current_page == 'booking_step1.php') ? 'active' : '' ?>">Packages</a>
         <a href="gallery.php">Gallery</a>
-        <a href="#about">About</a>
+        <a href="about.php">About</a>
         <a href="#faq">FAQ</a>
         <a href="#contact">Contact</a>
         <?php if (isset($_SESSION['customer_id'])): ?>
