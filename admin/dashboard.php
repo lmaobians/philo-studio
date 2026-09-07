@@ -221,7 +221,7 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <td>
                                     <strong><?= htmlspecialchars($b['package_name']) ?></strong> (₱<?= number_format($b['package_price'], 0) ?>)<br>
                                     <span class="admin-detail">
-                                        📅 <?= date('M d, Y', strtotime($b['schedule_date'])) ?> &nbsp;|&nbsp; ⏰ <?= date('g:i A', strtotime($b['schedule_time'])) ?>
+                                        <?= date('M d, Y', strtotime($b['schedule_date'])) ?> &nbsp;|&nbsp; <?= date('g:i A', strtotime($b['schedule_time'])) ?>
                                     </span>
                                 </td>
                                 <td onclick="event.stopPropagation();">
@@ -363,16 +363,16 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <label class="admin-payment-label">Select Payment Method</label>
                     <div class="payment-methods-grid">
                         <div class="payment-option selected" onclick="selectPayment('cash', this)">
-                            <input type="radio" name="payment_method" value="cash" checked> 💵 Cash (On-Site)
+                            <input type="radio" name="payment_method" value="cash" checked> Cash (On-Site)
                         </div>
                         <div class="payment-option" onclick="selectPayment('gcash', this)">
-                            <input type="radio" name="payment_method" value="gcash"> 📱 GCash
+                            <input type="radio" name="payment_method" value="gcash"> GCash
                         </div>
                         <div class="payment-option" onclick="selectPayment('bdo', this)">
-                            <input type="radio" name="payment_method" value="bdo"> 🏦 BDO Transfer
+                            <input type="radio" name="payment_method" value="bdo"> BDO Transfer
                         </div>
                         <div class="payment-option" onclick="selectPayment('gotyme', this)">
-                            <input type="radio" name="payment_method" value="gotyme"> 💳 GoTyme
+                            <input type="radio" name="payment_method" value="gotyme"> GoTyme
                         </div>
                     </div>
 
@@ -422,7 +422,7 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
                 <div class="detail-item">
                     <label>Date & Time</label>
-                    <p>📅 <span id="det-date"></span> | ⏰ <span id="det-time"></span></p>
+                    <p><span id="det-date"></span> | <span id="det-time"></span></p>
                 </div>
                 <div class="detail-item full-width">
                     <label>Notes & Add-ons</label>

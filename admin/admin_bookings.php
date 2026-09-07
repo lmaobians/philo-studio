@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['booking_id'], $_POST[
     $msg = "Booking status updated successfully.";
 }
 
-$query = "SELECT b.*, c.full_name, c.email, c.phone, p.name as package_name, p.price 
+$query = "SELECT b.*, c.full_name, c.email, c.phone, p.name as package_name, p.price
             FROM bookings b
             JOIN customers c ON b.customer_id = c.customer_id
             JOIN packages p ON b.package_id = p.package_id

@@ -20,8 +20,8 @@ if (session_status() === PHP_SESSION_NONE) {
 
     <section class="page-title-section text-center">
         <p class="booking-step-label">OUR STORY & VISION</p>
-        <h1 class="page-title">Capturing Genuine Moments</h1>
-        <p class="page-subtitle">A warm, self-photo studio space created for effortless memories, unfiltered smiles, and creative freedom.</p>
+        <h1 class="page-title">PHILO STUDIO</h1>
+        <p class="page-subtitle">PHILO Studio is Dumagueteʼs first self-shoot studio. Providing a private and professionally equipped space where customers can take their photos.</p>
     </section>
 
     <section class="about-container">
@@ -44,17 +44,17 @@ if (session_status() === PHP_SESSION_NONE) {
         <div class="about-container">
             <div class="highlights-grid">
                 <div class="highlight-card">
-                    <div class="highlight-icon">✨</div>
+                    <img src="images/privacy.png" alt="Privacy" class="highlight-icon-about">
                     <h3>Total Privacy</h3>
                     <p>Enjoy private studio sessions where you can express yourself freely without any audience.</p>
                 </div>
                 <div class="highlight-card">
-                    <div class="highlight-icon">🐾</div>
+                    <img src="images/petfriendly.png" alt="Pet Friendly" class="highlight-icon-about">
                     <h3>Pet Friendly</h3>
                     <p>Your furry companions are family too. Bring them along to capture high-quality portraits together.</p>
                 </div>
                 <div class="highlight-card">
-                    <div class="highlight-icon">📸</div>
+                    <img src="images/camera.png" alt="Camera" class="highlight-icon-about">
                     <h3>Studio Quality</h3>
                     <p>Professional cameras, studio lighting, and curated backdrops ensure high-grade photos every single time.</p>
                 </div>
