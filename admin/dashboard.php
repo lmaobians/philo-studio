@@ -1,6 +1,7 @@
 <?php
 $page_title = "Booking Management";
 require_once 'header.php';
+require_once 'booking_helpers.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
@@ -140,28 +141,10 @@ $total_bookings  = $db->query("SELECT COUNT(*) FROM bookings")->fetchColumn();
 $pending_count   = $db->query("SELECT COUNT(*) FROM bookings WHERE booking_status = 'Pending'")->fetchColumn();
 $confirmed_count = $db->query("SELECT COUNT(*) FROM bookings WHERE booking_status = 'Confirmed'")->fetchColumn();
 
-$query = "
-    SELECT 
-        b.booking_id,
-        b.booking_reference,
-        b.schedule_date,
-        b.schedule_time,
-        b.notes,
-        b.payment_proof,
-        b.booking_status,
-        c.full_name,
-        c.email,
-        c.phone,
-        COALESCE(p.name, 'Studio Package') AS package_name,
-        COALESCE(p.price, 0) AS package_price
-    FROM bookings b
-    LEFT JOIN customers c ON b.customer_id = c.customer_id
-    LEFT JOIN packages p ON b.package_id = p.package_id
-    ORDER BY b.booking_id DESC
-";
-$stmt = $db->prepare($query);
-$stmt->execute();
-$bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Fetch using centralized filter helper
+$search_query = $_GET['search'] ?? '';
+$status_filter = $_GET['status_filter'] ?? 'All';
+$bookings = getFilteredBookings($db, $search_query, $status_filter);
 
 $calendar_events = [];
 foreach ($bookings as $b) {
@@ -224,6 +207,8 @@ foreach ($bookings as $b) {
         </div>
 
         <div id="view-section-table" class="table-card">
+            <?php renderFilterForm($search_query, $status_filter); ?>
+
             <table class="booking-table">
                 <thead>
                     <tr>
@@ -315,6 +300,7 @@ foreach ($bookings as $b) {
 
     </div>
 
+    <!-- Create Walk-In Modal -->
     <div class="modal-overlay" id="createModal">
         <div class="modal-card">
             <div class="modal-header">
@@ -466,6 +452,7 @@ foreach ($bookings as $b) {
         </div>
     </div>
 
+    <!-- Booking Details Modal -->
     <div class="modal-overlay" id="detailModal">
         <div class="modal-card modal-card-clean">
             <div class="modal-header">
