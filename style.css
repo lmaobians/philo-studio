@@ -655,6 +655,64 @@ footer {
     margin-bottom: 0.5rem;
 }
 
+.footer-links summary {
+    list-style: none;
+    cursor: default;
+    outline: none;
+}
+
+.footer-links summary::-webkit-details-marker {
+    display: none;
+}
+
+.footer-links h4 {
+    display: inline-block;
+}
+
+@media (max-width: 768px) {
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    footer {
+        padding: 2.5rem 6%;
+    }
+
+    .footer-links {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        padding-bottom: 0.75rem;
+    }
+
+    .footer-links summary {
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .footer-links h4 {
+        margin-bottom: 0;
+        font-size: 0.85rem;
+    }
+
+    .footer-links summary::after {
+        content: '+';
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 400;
+        transition: transform 0.2s ease;
+    }
+
+    .footer-links[open] summary::after {
+        content: '−';
+    }
+
+    .footer-nav-group {
+        padding-top: 0.75rem;
+    }
+}
+
 
 .page-title-section {
     text-align: center;
