@@ -902,11 +902,13 @@ footer {
 }
 
 @media (max-width: 768px) {
-    .navbar {
-        flex-direction: column;
-        gap: 1.2rem;
-        padding: 1.2rem 5%;
-        text-align: center;
+        .navbar, nav {
+        display: flex;
+        flex-wrap: wrap; 
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        position: relative;
     }
 
     .nav-links {
@@ -2352,16 +2354,60 @@ footer {
     height: 32px;
 }
 
+.topbar-profile {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding-left: 1rem;
+    border-left: 1px solid #f0f0f0;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+}
+
+.user-role {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    color: #888;
+    letter-spacing: 0.05em;
+}
+
+.user-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #222;
+}
+
 .btn-logout {
-    color: #888888;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #555;
+    background-color: #f7f7f7;
+    border: 1px solid #e2e2e2;
+    border-radius: 8px;
     text-decoration: none;
-    font-size: 0.88rem;
-    font-weight: 500;
-    transition: color 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .btn-logout:hover {
-    color: #cb6d51;
+    background-color: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+}
+
+.btn-logout svg {
+    transition: transform 0.2s ease;
+}
+
+.btn-logout:hover svg {
+    transform: translateX(2px);
 }
 
 .admin-container {

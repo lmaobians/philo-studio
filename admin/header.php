@@ -45,7 +45,20 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <a href="customers.php" class="nav-link <?= $current_page === 'customers.php' ? 'active' : '' ?>">Customers</a>
         </div>
 
-        <a href="logout.php" class="btn-logout">Log Out</a>
+        <div class="topbar-profile">
+            <div class="profile-info">
+                <span class="user-role">Administrator</span>
+                <span class="user-name"><?= htmlspecialchars($_SESSION['admin_name'] ?? 'Admin Studio'); ?></span>
+            </div>
+            <a href="logout.php" class="btn-logout" title="Log Out">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>Log Out</span>
+            </a>
+        </div>
     </nav>
 
     <div class="admin-container">
