@@ -3595,3 +3595,62 @@ footer {
     text-decoration: line-through;
     pointer-events: none;
 }
+
+.table-card {
+    padding: 24px !important;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px !important;
+}
+
+.filter-bar .custom-input,
+.filter-bar .custom-select,
+.filter-bar #date-input {
+    height: 42px !important;
+    padding: 8px 14px !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    box-sizing: border-box !important;
+    outline: none;
+    background-color: #fff;
+}
+
+.filter-bar .btn-act {
+    height: 42px !important;
+    padding: 0 20px !important;
+    border-radius: 8px !important;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.booking-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.booking-table th {
+    padding: 12px 16px !important;
+    background-color: #fcf8f6;
+    color: #71717a;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.booking-table td {
+    padding: 16px !important;
+    border-bottom: 1px solid #f1f5f9;
+}
