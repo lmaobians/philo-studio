@@ -20,7 +20,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-$packages = $db->query("SELECT * FROM packages ORDER BY category ASC, price ASC")->fetchAll(PDO::FETCH_ASSOC);
+$search_query = $_GET['search'] ?? '';
+$search_by    = $_GET['search_by'] ?? 'all';
+
+$query = "SELECT * FROM packages WHERE 1=1";
+$params = [];
+
+if (!empty($search_query)) {
+    $term = '%' . trim($search_query) . '%';
+
+    switch ($search_by) {
+        case 'name':
+            $query .= " AND name LIKE ?";
+            $params[] = $term;
+            break;
+        case 'category':
+            $query .= " AND category LIKE ?";
+            $params[] = $term;
+            break;
+        case 'duration':
+            $query .= " AND duration LIKE ?";
+            $params[] = $term;
+            break;
+        case 'pax':
+            $query .= " AND CAST(max_pax AS CHAR) LIKE ?";
+            $params[] = $term;
+            break;
+        case 'price':
+            $query .= " AND CAST(price AS CHAR) LIKE ?";
+            $params[] = $term;
+            break;
+        case 'status':
+            $status_term = strtolower(trim($search_query));
+            if ($status_term === 'activated' || $status_term === 'active') {
+                $query .= " AND status = 'active'";
+            } elseif ($status_term === 'deactivated' || $status_term === 'inactive') {
+                $query .= " AND status = 'inactive'";
+            } else {
+                $query .= " AND status LIKE ?";
+                $params[] = $term;
+            }
+            break;
+        default:
+            $query .= " AND (name LIKE ? OR category LIKE ? OR duration LIKE ? OR CAST(max_pax AS CHAR) LIKE ? OR CAST(price AS CHAR) LIKE ? OR status LIKE ?)";
+            $params = [$term, $term, $term, $term, $term, $term];
+            break;
+    }
+}
+
+$query .= " ORDER BY category ASC, price ASC";
+
+$stmt = $db->prepare($query);
+$stmt->execute($params);
+$packages = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
         <div class="action-bar">
@@ -28,6 +80,26 @@ $packages = $db->query("SELECT * FROM packages ORDER BY category ASC, price ASC"
         </div>
 
         <div class="table-card">
+            <form method="GET" class="filter-bar" style="display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
+                <select name="search_by" class="custom-select" style="max-width: 170px;">
+                    <option value="all" <?= $search_by === 'all' ? 'selected' : '' ?>>Search All Fields</option>
+                    <option value="name" <?= $search_by === 'name' ? 'selected' : '' ?>>Package Name</option>
+                    <option value="category" <?= $search_by === 'category' ? 'selected' : '' ?>>Category</option>
+                    <option value="duration" <?= $search_by === 'duration' ? 'selected' : '' ?>>Duration</option>
+                    <option value="pax" <?= $search_by === 'pax' ? 'selected' : '' ?>>Max Pax</option>
+                    <option value="price" <?= $search_by === 'price' ? 'selected' : '' ?>>Price</option>
+                    <option value="status" <?= $search_by === 'status' ? 'selected' : '' ?>>Status</option>
+                </select>
+
+                <input type="text" name="search" value="<?= htmlspecialchars($search_query) ?>" placeholder="Search records..." class="custom-input" style="max-width: 280px; flex: 1;">
+
+                <button type="submit" class="btn-act btn-approve">Search</button>
+
+                <?php if (!empty($search_query)): ?>
+                    <a href="packages_manage.php" class="btn-act btn-cancel" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">Reset</a>
+                <?php endif; ?>
+            </form>
+
             <table class="booking-table">
                 <thead>
                     <tr>
@@ -41,7 +113,7 @@ $packages = $db->query("SELECT * FROM packages ORDER BY category ASC, price ASC"
                 </thead>
                 <tbody>
                     <?php if (empty($packages)): ?>
-                        <tr><td colspan="6" class="admin-empty-state">No studio packages found.</td></tr>
+                        <tr><td colspan="6" class="admin-empty-state">No studio packages found matching criteria.</td></tr>
                     <?php else: ?>
                         <?php foreach ($packages as $p): ?>
                             <tr>
