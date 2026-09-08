@@ -20,14 +20,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $database = new Database();
             $db = $database->getConnection();
 
-            // Fetch record matching username (case-insensitive)
             $stmt = $db->prepare("SELECT admin_id, username, password, full_name FROM admins WHERE LOWER(username) = LOWER(:username) LIMIT 1");
             $stmt->execute([':username' => $username]);
             $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // Check if user exists and verify password against the hash
             if ($admin && password_verify($password, $admin['password'])) {
-                // Regenerate session ID for extra session fixation security
                 session_regenerate_id(true);
 
                 $_SESSION['admin_id']   = $admin['admin_id'];

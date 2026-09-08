@@ -105,13 +105,23 @@ a {
     font-weight: 700;
     font-size: 0.8rem;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 10px rgba(203, 107, 92, 0.25);
-    transition: background 0.3s ease, transform 0.2s ease;
+    border: none;
+    outline: none;
+    cursor: pointer;
+
+    box-shadow: 0 4px 14px rgba(203, 107, 92, 0.35);
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(203, 107, 92, 0.45);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 8px rgba(203, 107, 92, 0.3);
 }
 
 .btn-secondary {
@@ -382,10 +392,9 @@ a {
 }
 
 .package-card {
-    background: var(--card-bg);
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .package-card img {
@@ -395,7 +404,9 @@ a {
 }
 
 .card-body {
-    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
 
 .card-head {
@@ -414,6 +425,10 @@ a {
     font-size: 0.85rem;
     color: var(--text-muted);
     margin-bottom: 1.5rem;
+}
+
+.card-body form {
+    margin-top: auto;
 }
 
 .full-width {
