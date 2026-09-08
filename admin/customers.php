@@ -1,16 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-require_once '../config/database.php';
-
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: login.php");
-    exit();
-}
-
-$database = new Database();
-$db = $database->getConnection();
+$page_title = "Customer Accounts";
+require_once 'header.php';
 
 $total_customers = $db->query("SELECT COUNT(*) FROM customers")->fetchColumn();
 
@@ -31,34 +21,6 @@ $stmt = $db->prepare($query);
 $stmt->execute();
 $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Accounts | PHILO Studio</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="dashboard.css">
-</head>
-<body class="admin-page">
-
-    <nav class="admin-nav">
-        <div class="admin-brand">
-            <img src="../header-logo.jpg" alt="PHILO Studio Logo" onerror="this.classList.add('is-hidden')">
-            <span>ADMIN CONTROL CENTER</span>
-        </div>
-        <div class="action-btn-group">
-            <a href="dashboard.php" class="btn-toggle">Bookings</a>
-            <a href="daily_schedule.php" class="btn-toggle">Daily Schedule</a>
-            <a href="customers.php" class="btn-toggle active">Customers</a>
-            <a href="logout.php" class="btn-logout">Log Out</a>
-        </div>
-    </nav>
-
-    <div class="admin-container">
 
         <div class="action-bar">
             <h1 class="page-title-pink">Customer Accounts</h1>

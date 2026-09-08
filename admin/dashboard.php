@@ -1,20 +1,6 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-require_once '../config/database.php';
-
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: login.php");
-    exit();
-}
-
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-
-$database = new Database();
-$db = $database->getConnection();
+$page_title = "Booking Management";
+require_once 'header.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
@@ -210,37 +196,6 @@ foreach ($bookings as $b) {
     ];
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booking Management | PHILO Studio</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style.css">
-    <link rel="stylesheet" href="dashboard.css">
-    
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-</head>
-<body class="admin-page">
-
-    <nav class="admin-nav">
-        <div class="admin-brand">
-            <img src="../header-logo.jpg" alt="PHILO Studio Logo" onerror="this.classList.add('is-hidden')">
-            <span>ADMIN CONTROL CENTER</span>
-        </div>
-        <a href="logout.php" class="btn-logout">Log Out</a>
-    </nav>
-
-    <div class="admin-container">
-
-        <?php if (isset($_SESSION['admin_msg'])): ?>
-            <div class="alert-toast">
-                <?= $_SESSION['admin_msg']; unset($_SESSION['admin_msg']); ?>
-            </div>
-        <?php endif; ?>
 
         <div class="action-bar">
             <h1 class="page-title-pink">Booking Management</h1>
