@@ -35,7 +35,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
     <nav class="admin-nav">
         <div class="admin-brand">
-            <img src="../header-logo.jpg" alt="PHILO Studio Logo" onerror="this.classList.add('is-hidden')">
             <span>ADMIN CONTROL CENTER</span>
         </div>
         
