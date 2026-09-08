@@ -98,6 +98,19 @@ function getFilteredPackages(PDO $db, string $search = ''): array {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function isSlotBlackedOut(PDO $db, string $date, string $time): bool {
+    $stmt = $db->prepare("
+        SELECT COUNT(*) FROM blackout_dates
+        WHERE blackout_date = ?
+    AND (
+            (start_time IS NULL AND end_time IS NULL)
+            OR (? BETWEEN start_time AND end_time)
+        )
+    ");
+    $stmt->execute([$date, $time]);
+    return $stmt->fetchColumn() > 0;
+}
+
 function renderFilterForm(string $currentSearch = '', string $currentStatus = 'All', bool $showStatusFilter = true, string $currentDate = ''): void {
     ?>
     <form method="GET" class="filter-bar" style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">

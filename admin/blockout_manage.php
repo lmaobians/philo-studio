@@ -1,68 +1,72 @@
 <?php
-$page_title = "Manage Blackout Dates";
+$page_title = "Manage Blockout Dates";
 require_once 'header.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    if ($_POST['action'] === 'add_blackout') {
-        $title      = trim($_POST['title']);
-        $start_date = $_POST['start_date'];
-        $end_date   = $_POST['end_date'] ?: $start_date;
-        $start_time = !empty($_POST['start_time']) ? $_POST['start_time'] : null;
-        $end_time   = !empty($_POST['end_time']) ? $_POST['end_time'] : null;
-        $reason     = trim($_POST['reason'] ?? '');
-
-        $stmt = $db->prepare("INSERT INTO blackout_dates (title, start_date, end_date, start_time, end_time, reason) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$title, $start_date, $end_date, $start_time, $end_time, $reason]);
-        header("Location: blackout_manage.php");
-        exit();
+    if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
+        die("Invalid CSRF token.");
     }
 
-    if ($_POST['action'] === 'delete_blackout' && isset($_POST['blackout_id'])) {
-        $stmt = $db->prepare("DELETE FROM blackout_dates WHERE blackout_id = ?");
-        $stmt->execute([(int)$_POST['blackout_id']]);
-        header("Location: blackout_manage.php");
-        exit();
+    if ($_POST['action'] === 'add_blockout') {
+        $date  = $_POST['blockout_date'];
+        $start = !empty($_POST['start_time']) ? $_POST['start_time'] : null;
+        $end   = !empty($_POST['end_time']) ? $_POST['end_time'] : null;
+        $reason = trim($_POST['reason']) ?: 'Unavailable / Holiday';
+
+        $ins = $db->prepare("INSERT INTO blockout_dates (blockout_date, start_time, end_time, reason) VALUES (?, ?, ?, ?)");
+        $ins->execute([$date, $start, $end, $reason]);
+        $_SESSION['admin_msg'] = "Blockout entry added successfully.";
     }
+
+    if ($_POST['action'] === 'delete_blockout') {
+        $id = (int)$_POST['blockout_id'];
+        $del = $db->prepare("DELETE FROM blockout_dates WHERE blockout_id = ?");
+        $del->execute([$id]);
+        $_SESSION['admin_msg'] = "Blockout entry deleted.";
+    }
+
+    header("Location: blockout_manage.php");
+    exit();
 }
 
-$blackouts = $db->query("SELECT * FROM blackout_dates ORDER BY start_date DESC")->fetchAll(PDO::FETCH_ASSOC);
+$blockouts = $db->query("SELECT * FROM blockout_dates ORDER BY blockout_date DESC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="action-bar">
-    <h1 class="page-title-pink">Blackout Dates & Holidays</h1>
+    <h1 class="page-title-pink">Blockout Dates & Holidays</h1>
 </div>
 
-<div class="table-card" style="margin-bottom: 20px;">
-    <h3 style="margin-top: 0; margin-bottom: 16px;">Add Blocked Date or Time Slot</h3>
-    <form method="POST" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
-        <input type="hidden" name="action" value="add_blackout">
-        
-        <div>
-            <label style="display:block; font-size: 0.8rem; font-weight:600; margin-bottom: 4px;">Title</label>
-            <input type="text" name="title" required placeholder="e.g., Studio Maintenance" class="custom-input" style="width: 200px;">
-        </div>
+<div class="table-card blockout-card">
+    <h3 class="card-subtitle">Add Blocked Date / Range</h3>
+    <form method="POST" class="blockout-form">
+        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+        <input type="hidden" name="action" value="add_blockout">
 
-        <div>
-            <label style="display:block; font-size: 0.8rem; font-weight:600; margin-bottom: 4px;">Start Date</label>
-            <input type="date" name="start_date" required class="custom-input">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" name="blockout_date" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Start Time <span class="optional-text">(Optional)</span></label>
+                <input type="time" name="start_time" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label>End Time <span class="optional-text">(Optional)</span></label>
+                <input type="time" name="end_time" class="form-input">
+            </div>
+            
+            <div class="form-group span-reason">
+                <label>Reason</label>
+                <input type="text" name="reason" class="form-input" placeholder="e.g., Studio Maintenance or Holiday">
+            </div>
+            
+            <div class="form-group btn-container">
+                <button type="submit" class="btn-create btn-block-slot">Block Slot</button>
+            </div>
         </div>
-
-        <div>
-            <label style="display:block; font-size: 0.8rem; font-weight:600; margin-bottom: 4px;">End Date</label>
-            <input type="date" name="end_date" class="custom-input">
-        </div>
-
-        <div>
-            <label style="display:block; font-size: 0.8rem; font-weight:600; margin-bottom: 4px;">Start Time (Optional)</label>
-            <input type="time" name="start_time" class="custom-input">
-        </div>
-
-        <div>
-            <label style="display:block; font-size: 0.8rem; font-weight:600; margin-bottom: 4px;">End Time (Optional)</label>
-            <input type="time" name="end_time" class="custom-input">
-        </div>
-
-        <button type="submit" class="btn-act btn-approve" style="height: 42px;">Block Date</button>
     </form>
 </div>
 
@@ -70,30 +74,33 @@ $blackouts = $db->query("SELECT * FROM blackout_dates ORDER BY start_date DESC")
     <table class="booking-table">
         <thead>
             <tr>
-                <th>TITLE</th>
-                <th>DATES</th>
+                <th>DATE</th>
                 <th>TIME RANGE</th>
-                <th class="text-right">ACTIONS</th>
+                <th>REASON</th>
+                <th class="text-right">ACTION</th>
             </tr>
         </thead>
         <tbody>
-            <?php if (empty($blackouts)): ?>
-                <tr><td colspan="4" class="admin-empty-state">No blackout dates created yet.</td></tr>
+            <?php if (empty($blockouts)): ?>
+                <tr>
+                    <td colspan="4" class="text-center empty-msg">No blockout dates or holidays configured yet.</td>
+                </tr>
             <?php else: ?>
-                <?php foreach ($blackouts as $b): ?>
+                <?php foreach ($blockouts as $b): ?>
                     <tr>
-                        <td><strong><?= htmlspecialchars($b['title']) ?></strong></td>
-                        <td><?= date('M d, Y', strtotime($b['start_date'])) ?> to <?= date('M d, Y', strtotime($b['end_date'])) ?></td>
+                        <td><strong><?= date('M d, Y', strtotime($b['blockout_date'])) ?></strong></td>
                         <td>
                             <?= ($b['start_time'] && $b['end_time']) 
-                                ? date('g:i A', strtotime($b['start_time'])) . ' - ' . date('g:i A', strtotime($b['end_time'])) 
-                                : '<span class="badge-status status-cancelled">All Day</span>' ?>
+                                ? date('g:i A', strtotime($b['start_time'])) . ' - ' . date('g:i A', strtotime($b['end_time']))
+                                : '<span class="badge-full-day">Full Day</span>' ?>
                         </td>
+                        <td><?= htmlspecialchars($b['reason']) ?></td>
                         <td class="text-right">
-                            <form method="POST" onsubmit="return confirm('Remove this blackout rule?');" style="display:inline;">
-                                <input type="hidden" name="action" value="delete_blackout">
-                                <input type="hidden" name="blackout_id" value="<?= (int)$b['blackout_id'] ?>">
-                                <button type="submit" class="btn-act btn-cancel">Remove</button>
+                            <form method="POST" class="admin-inline" onsubmit="return confirm('Delete this block?');">
+                                <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                <input type="hidden" name="action" value="delete_blockout">
+                                <input type="hidden" name="blockout_id" value="<?= $b['blockout_id'] ?>">
+                                <button type="submit" class="btn-act btn-delete">Remove</button>
                             </form>
                         </td>
                     </tr>
@@ -102,5 +109,3 @@ $blackouts = $db->query("SELECT * FROM blackout_dates ORDER BY start_date DESC")
         </tbody>
     </table>
 </div>
-</body>
-</html>
