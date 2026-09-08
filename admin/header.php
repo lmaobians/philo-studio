@@ -41,6 +41,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <div class="admin-nav-links">
             <a href="dashboard.php" class="nav-link <?= $current_page === 'dashboard.php' ? 'active' : '' ?>">Bookings</a>
             <a href="daily_schedule.php" class="nav-link <?= $current_page === 'daily_schedule.php' ? 'active' : '' ?>">Daily Schedule</a>
+            <a href="blockout_manage.php" class="nav-link <?= $current_page === 'blockout_manage.php' ? 'active' : '' ?>">Blockout Dates</a>
             <a href="packages_manage.php" class="nav-link <?= $current_page === 'packages_manage.php' ? 'active' : '' ?>">Packages</a>
             <a href="customers.php" class="nav-link <?= $current_page === 'customers.php' ? 'active' : '' ?>">Customers</a>
         </div>
