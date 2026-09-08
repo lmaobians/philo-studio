@@ -8,6 +8,10 @@ require_once 'config/database.php';
 $error = '';
 $redirect = $_GET['redirect'] ?? 'dashboard.php';
 
+if (!is_string($redirect) || preg_match('/[\r\n]/', $redirect) || str_starts_with($redirect, '//') || preg_match('#^[a-z][a-z0-9+.-]*://#i', $redirect)) {
+    $redirect = 'dashboard.php';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = mb_strtoupper(trim($_POST['name'] ?? ''), 'UTF-8');
     $email = trim($_POST['email'] ?? '');
@@ -15,9 +19,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
 
-    if (!empty($name) && !empty($email) && !empty($password)) {
+    if (!empty($name) && filter_var($email, FILTER_VALIDATE_EMAIL) && !empty($password)) {
         if ($password !== $confirm_password) {
             $error = 'Passwords do not match.';
+        } elseif (strlen($password) < 8) {
+            $error = 'Password must be at least 8 characters long.';
         } else {
             $database = new Database();
             $db = $database->getConnection();
@@ -30,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                 
-$insert = $db->prepare("INSERT INTO customers (full_name, email, phone, password) VALUES (?, ?, ?, ?)");
+                $insert = $db->prepare("INSERT INTO customers (full_name, email, phone, password) VALUES (?, ?, ?, ?)");
                 if ($insert->execute([$name, $email, $phone, $hashed_password])) {
                     $customer_id = $db->lastInsertId();
                     
@@ -46,7 +52,7 @@ $insert = $db->prepare("INSERT INTO customers (full_name, email, phone, password
             }
         }
     } else {
-        $error = 'Please fill in all required fields.';
+        $error = 'Please provide a valid name, email, and password.';
     }
 }
 ?>

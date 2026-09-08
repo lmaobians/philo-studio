@@ -16,7 +16,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <a href="packages.php" class="<?= ($current_page == 'booking_step1.php') ? 'active' : '' ?>">Packages</a>
         <a href="gallery.php">Gallery</a>
         <a href="about.php">About</a>
-        <a href="#faq">FAQ</a>
+        <a href="faq.php">FAQ</a>
         <a href="contact.php">Contact</a>
         <?php if (isset($_SESSION['customer_id'])): ?>
             <a href="dashboard.php" class="<?= ($current_page == 'dashboard.php') ? 'active' : '' ?>">My Account</a>

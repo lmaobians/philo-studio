@@ -4,7 +4,7 @@
     <p>Slots fill fast. Book now and secure your date, we handle everything from there.</p>
     <div class="cta-btns">
         <a href="packages.php" class="btn-white">BOOK YOUR SESSION</a>
-        <a href="#contact" class="btn-outline-white">GET IN TOUCH</a>
+        <a href="contact.php" class="btn-outline-white">GET IN TOUCH</a>
     </div>
 </section>
 
@@ -21,9 +21,9 @@
         <div class="footer-links">
             <h4>STUDIO</h4>
             <a href="about.php">About</a>
-            <a href="#gallery">Gallery</a>
+            <a href="gallery.php">Gallery</a>
             <a href="packages.php">Packages</a>
-            <a href="#faq">FAQ</a>
+            <a href="faq.php">FAQ</a>
         </div>
         <div class="footer-links">
             <h4>SERVICES</h4>
@@ -36,8 +36,8 @@
         <div class="footer-links">
             <h4>SUPPORT</h4>
             <a href="packages.php">Book a Session</a>
-            <a href="#contact">Contact Us</a>
-            <a href="#policies">Cancellation Policy</a>
+            <a href="contact.php">Contact Us</a>
+            <a href="faq.php">Cancellation Policy</a>
         </div>
     </div>
 </footer>

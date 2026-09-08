@@ -12,19 +12,24 @@ if (isset($_SESSION['admin_id'])) {
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username']);
-    $password = trim($_POST['password']);
+    $username = trim($_POST['username'] ?? '');
+    $password = trim($_POST['password'] ?? '');
 
     if (!empty($username) && !empty($password)) {
         try {
             $database = new Database();
             $db = $database->getConnection();
 
-            $stmt = $db->prepare("SELECT admin_id, username, password, full_name FROM admins WHERE LOWER(username) = LOWER(?) LIMIT 1");
-            $stmt->execute([$username]);
+            // Fetch record matching username (case-insensitive)
+            $stmt = $db->prepare("SELECT admin_id, username, password, full_name FROM admins WHERE LOWER(username) = LOWER(:username) LIMIT 1");
+            $stmt->execute([':username' => $username]);
             $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($admin && (password_verify($password, $admin['password']) || $password === 'philostudio111822')) {
+            // Check if user exists and verify password against the hash
+            if ($admin && password_verify($password, $admin['password'])) {
+                // Regenerate session ID for extra session fixation security
+                session_regenerate_id(true);
+
                 $_SESSION['admin_id']   = $admin['admin_id'];
                 $_SESSION['admin_user'] = $admin['username'];
                 $_SESSION['admin_name'] = $admin['full_name'];
@@ -34,8 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $error = "Invalid username or password.";
             }
+        } catch (PDOException $e) {
+            $error = "Database Error: " . $e->getMessage();
         } catch (Exception $e) {
-            $error = "Database Connection Error: " . $e->getMessage();
+            $error = "Error: " . $e->getMessage();
         }
     } else {
         $error = "Please fill in all fields.";
@@ -58,13 +65,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <p class="subtitle">Admin Portal Access</p>
 
     <?php if (!empty($error)): ?>
-        <div class="alert-error"><?= htmlspecialchars($error) ?></div>
+        <div class="alert-error" style="color: #dc2626; background: #fef2f2; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem;">
+            <?= htmlspecialchars($error) ?>
+        </div>
     <?php endif; ?>
 
     <form method="POST">
         <div class="form-group">
             <label for="username">Username</label>
-            <input type="text" id="username" name="username" required placeholder="admin">
+            <input type="text" id="username" name="username" required placeholder="Username" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
         </div>
         <div class="form-group">
             <label for="password">Password</label>

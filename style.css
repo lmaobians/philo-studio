@@ -2972,3 +2972,129 @@ footer {
     text-align: center;
     margin: 0 auto;
 }
+
+.faq-main-wrapper {
+    padding: 3rem 1.5rem 5rem;
+    max-width: 860px;
+    margin: 0 auto;
+}
+
+.faq-hero {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.faq-hero-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: #D97762;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.faq-hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.75rem;
+}
+
+.faq-hero-desc {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    color: #64748b;
+    max-width: 550px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+.faq-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+}
+
+.faq-group-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: #D97762;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 0.5rem;
+}
+
+.faq-item {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 0.85rem;
+    padding: 1.15rem 1.25rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.faq-item[open] {
+    border-color: #D97762;
+    box-shadow: 0 4px 12px rgba(217, 119, 98, 0.08);
+}
+
+.faq-question {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.faq-question::-webkit-details-marker {
+    display: none;
+}
+
+.faq-question::after {
+    content: '+';
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: #D97762;
+    transition: transform 0.2s ease;
+}
+
+.faq-item[open] .faq-question::after {
+    content: '−';
+}
+
+.faq-answer {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: #475569;
+    line-height: 1.6;
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+.faq-answer p {
+    margin-bottom: 0.75rem;
+}
+
+.faq-answer p:last-child {
+    margin-bottom: 0;
+}
+
+.faq-answer ul {
+    padding-left: 1.25rem;
+    margin: 0;
+}
+
+.faq-answer li {
+    margin-bottom: 0.5rem;
+}
+
+.faq-answer li:last-child {
+    margin-bottom: 0;
+}

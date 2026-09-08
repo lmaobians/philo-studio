@@ -8,6 +8,10 @@ require_once 'config/database.php';
 $error = '';
 $redirect = $_GET['redirect'] ?? 'dashboard.php';
 
+if (!is_string($redirect) || preg_match('/[\r\n]/', $redirect) || str_starts_with($redirect, '//') || preg_match('#^[a-z][a-z0-9+.-]*://#i', $redirect)) {
+    $redirect = 'dashboard.php';
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
@@ -16,12 +20,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $database = new Database();
         $db = $database->getConnection();
 
-        $stmt = $db->prepare("SELECT customer_id, full_name AS name, email, password_hash AS password FROM customers WHERE email = ? LIMIT 1");        $stmt->execute([$email]);
+        $stmt = $db->prepare("SELECT customer_id, full_name AS name, email, password FROM customers WHERE email = ? LIMIT 1");
+        $stmt->execute([$email]);
         $user = $stmt->fetch();
 
-        if (!$user) {
-            $error = 'No account found with this email. Please create an account first.';
-        } elseif (password_verify($password, $user['password'])) {
+        if ($user && password_verify($password, $user['password'])) {
+            session_regenerate_id(true);
             $_SESSION['customer_id']    = $user['customer_id'];
             $_SESSION['customer_name']  = $user['name'];
             $_SESSION['customer_email'] = $user['email'];
@@ -29,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: " . $redirect);
             exit();
         } else {
-            $error = 'Incorrect password. Please try again.';
+            $error = 'Invalid email or password.';
         }
     } else {
         $error = 'Please fill in all fields.';

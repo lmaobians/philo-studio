@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_package_id']))
                             <div class="card-image-wrap">
                                 <img src="<?= htmlspecialchars($pkg['image_url'] ?: 'images/solo-package.jpg') ?>" alt="<?= htmlspecialchars($pkg['name']) ?>">
                                 <span class="img-badge">
-                                    <?= htmlspecialchars($pkg['duration']) ?> · 
+                                    <?= htmlspecialchars($pkg['duration']) ?> ·
                                     <?= $pkg['min_pax'] == $pkg['max_pax'] ? $pkg['max_pax'] . ' person' : $pkg['min_pax'] . '–' . $pkg['max_pax'] . ' people' ?>
                                 </span>
                             </div>
