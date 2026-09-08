@@ -18,12 +18,14 @@ $cust_stmt = $db->prepare("SELECT full_name, email, phone FROM customers WHERE c
 $cust_stmt->execute([$customer_id]);
 $customer = $cust_stmt->fetch();
 
-$pkg       = $_SESSION['booking_package'];
-$date      = $_SESSION['booking_date'];
-$time      = $_SESSION['booking_time'];
-$backdrop  = $_SESSION['booking_backdrop'];
-$has_pets  = $_SESSION['booking_has_pets'];
-$pet_info  = $_SESSION['booking_pet_details'];
+$pkg      = $_SESSION['booking_package'];
+$date     = $_SESSION['booking_date'];
+$time     = $_SESSION['booking_time'];
+$backdrop = $_SESSION['booking_backdrop'];
+$has_pets = $_SESSION['booking_has_pets'];
+$pet_info = $_SESSION['booking_pet_details'];
+
+$total_amount = floatval($pkg['price'] ?? $pkg['package_price'] ?? 0);
 
 $error = '';
 
@@ -68,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $notes .= " | Payment: {$payment_mode} | Social Media Consent: {$consent}";
 
-        $check = $db->prepare("SELECT booking_id FROM bookings WHERE schedule_date = ? AND schedule_time = ? AND booking_status IN ('Pending', 'Confirmed') LIMIT 1");
+        $check = $db->prepare("SELECT booking_id FROM bookings WHERE schedule_date = ? AND schedule_time = ? AND UPPER(TRIM(booking_status)) IN ('PENDING', 'CONFIRMED') LIMIT 1");
         $check->execute([$date, $time]);
 
         if ($check->fetch()) {
@@ -76,18 +78,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $booking_ref = 'BK-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 6));
 
-            $query = "INSERT INTO bookings (booking_reference, customer_id, package_id, schedule_date, schedule_time, participants, notes, payment_proof, booking_status) 
-                        VALUES (?, ?, ?, ?, ?, 1, ?, ?, 'Pending')";
+            $query = "INSERT INTO bookings (booking_reference, customer_id, package_id, schedule_date, schedule_time, participants, total_amount, payment_status, notes, payment_proof, booking_status) 
+                    VALUES (?, ?, ?, ?, ?, 1, ?, 'Paid', ?, ?, 'Pending')";
+
             $stmt = $db->prepare($query);
 
-            if ($stmt->execute([$booking_ref, $customer_id, $pkg['package_id'], $date, $time, $notes, $payment_proof_path])) {
+            if ($stmt->execute([$booking_ref, $customer_id, $pkg['package_id'], $date, $time, $total_amount, $notes, $payment_proof_path])) {
                 unset($_SESSION['booking_package'], $_SESSION['booking_date'], $_SESSION['booking_time'], $_SESSION['booking_backdrop'], $_SESSION['booking_has_pets'], $_SESSION['booking_pet_details']);
                 
                 $_SESSION['booking_success'] = "Your slot has been reserved! We will verify your payment shortly.";
                 header("Location: dashboard.php");
                 exit();
             } else {
-                $error = "Failed to complete booking. Please try again.";
+                $error = "There was an error processing your booking. Please try again.";
             }
         }
     }
@@ -125,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="summary-row"><span class="summary-label">Name:</span><span class="summary-val"><?= htmlspecialchars($customer['full_name'] ?? $_SESSION['customer_name'] ?? $_SESSION['user_name'] ?? 'Client') ?></span></div>
                 <div class="summary-row"><span class="summary-label">Email:</span><span class="summary-val"><?= htmlspecialchars($customer['email'] ?? $_SESSION['customer_email'] ?? $_SESSION['user_email'] ?? 'N/A') ?></span></div>
                 <div class="summary-row"><span class="summary-label">Phone Number:</span><span class="summary-val"><?= htmlspecialchars($customer['phone'] ?? 'N/A') ?></span></div>
-                <div class="summary-row"><span class="summary-label">Package:</span><span class="summary-val"><?= htmlspecialchars($pkg['name']) ?> (₱<?= number_format($pkg['price'], 0) ?>)</span></div>
+                <div class="summary-row"><span class="summary-label">Package:</span><span class="summary-val"><?= htmlspecialchars($pkg['name']) ?> (₱<?= number_format($total_amount, 0) ?>)</span></div>
                 <div class="summary-row"><span class="summary-label">Backdrop Color:</span><span class="summary-val"><?= htmlspecialchars($backdrop) ?></span></div>
                 <div class="summary-row"><span class="summary-label">Pets (Yes / No):</span><span class="summary-val"><?= htmlspecialchars($has_pets) ?></span></div>
                 <?php if ($has_pets === 'Yes' && !empty($pet_info)): ?>

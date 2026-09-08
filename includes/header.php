@@ -11,14 +11,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <img src="images/header-logo.jpg" alt="Philo Studio Logo">
     </a>
 
-    <!-- Hamburger Icon for Mobile -->
     <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">
         <span></span>
         <span></span>
         <span></span>
     </button>
 
-    <!-- Collapsible Menu Container -->
     <div class="nav-menu" id="navMenu">
         <nav class="nav-links">
             <a href="philostudio.php" class="<?= ($current_page == 'philostudio.php') ? 'active' : '' ?>">Home</a>

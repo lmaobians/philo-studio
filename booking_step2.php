@@ -132,12 +132,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             renderCalendar();
         }
 
-        function generateTimeSlots() {
+        async function generateTimeSlots() {
             const container = document.getElementById('slots_container');
             container.innerHTML = '';
             document.getElementById('time_section').classList.add('is-visible');
             document.getElementById('next_btn').disabled = true;
             document.getElementById('schedule_time').value = '';
+
+            let bookedSlots = [];
+            try {
+                const res = await fetch(`get_booked_slots.php?date=${selectedDateStr}`);
+                bookedSlots = await res.json();
+            } catch (err) {
+                console.error("Error fetching booked slots:", err);
+            }
 
             const now = new Date();
             const todayFormatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -158,26 +166,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 let minutes = start % 60;
                 let displayHours = hours % 12 || 12;
                 let ampm = hours < 12 ? 'AM' : 'PM';
-                let timeStr = `${String(displayHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${ampm}`;
+
+                let timePadded12 = `${String(displayHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${ampm}`;
+                let timeUnpadded12 = `${displayHours}:${String(minutes).padStart(2, '0')} ${ampm}`;
                 let rawValue = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+                let rawValueShort = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 
                 let btn = document.createElement('div');
                 btn.className = 'slot-btn';
-                btn.innerText = timeStr;
-                btn.onclick = function() {
-                    document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
-                    btn.classList.add('selected');
-                    document.getElementById('schedule_time').value = rawValue;
-                    document.getElementById('next_btn').disabled = false;
-                };
+                btn.innerText = timePadded12;
+
+                let isBooked = false;
+                if (Array.isArray(bookedSlots)) {
+                    isBooked = bookedSlots.some(slot => {
+                        let s = String(slot).trim().toLowerCase();
+                        return s === rawValue.toLowerCase() ||
+                               s === rawValueShort.toLowerCase() ||
+                               s === timePadded12.toLowerCase() ||
+                               s === timeUnpadded12.toLowerCase();
+                    });
+                }
+
+                if (isBooked) {
+                    btn.classList.add('disabled');
+                    btn.style.pointerEvents = 'none';
+                    btn.style.opacity = '0.4';
+                    btn.style.textDecoration = 'line-through';
+                    btn.style.backgroundColor = '#e9ecef';
+                    btn.style.color = '#6c757d';
+                } else {
+                    btn.onclick = function() {
+                        document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        document.getElementById('schedule_time').value = rawValue;
+                        document.getElementById('next_btn').disabled = false;
+                    };
+                    availableSlotsCount++;
+                }
 
                 container.appendChild(btn);
-                availableSlotsCount++;
                 start += slotMinutes;
             }
 
             if (availableSlotsCount === 0) {
-                container.innerHTML = '<p style="grid-column: 1 / -1; color: #721c24; background: #f8d7da; padding: 12px; border-radius: 8px; font-size: 0.9rem;">No available time slots remaining for today. Please select another date.</p>';
+                container.innerHTML = '<p style="grid-column: 1 / -1; color: #721c24; background: #f8d7da; padding: 12px; border-radius: 8px; font-size: 0.9rem;">No available time slots remaining for this date. Please select another date.</p>';
             }
         }
 
