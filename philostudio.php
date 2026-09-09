@@ -13,7 +13,7 @@
 
 <?php include 'includes/header.php'; ?>
 
-  <section class="hero" id="home">
+    <section class="hero" id="home">
         <div class="hero-text">
             <p class="subtitle">CAPTURE YOUR MOMENTS</p>
             <h1>Studio photos, <br><em>made simple.</em></h1>

@@ -5,6 +5,16 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once 'config/database.php';
 
+if (isset($_SESSION['admin_id'])) {
+    header('Location: admin/dashboard.php');
+    exit();
+}
+
+if (isset($_SESSION['customer_id'])) {
+    header('Location: dashboard.php');
+    exit();
+}
+
 $error = '';
 $redirect = $_GET['redirect'] ?? 'dashboard.php';
 
