@@ -1,0 +1,16 @@
+# Environment & Sensitive Configs
+.env
+config/database.php
+
+# Dependency Folders
+/vendor/
+
+# User Uploaded Media
+/uploads/*
+!/uploads/.gitkeep
+
+# Operating System & IDE Artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
