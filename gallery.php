@@ -24,8 +24,6 @@ if (session_status() === PHP_SESSION_NONE) {
     </section>
         
         <div class="gallery-masonry">
-            <div class="gallery-item"><img src="images/gallery-1.jpg" alt="Gallery Photo 1"></div>
-            <div class="gallery-item"><img src="images/gallery-2.jpg" alt="Gallery Photo 2"></div>
             <div class="gallery-item"><img src="images/gallery-3.jpg" alt="Gallery Photo 3"></div>
             <div class="gallery-item"><img src="images/gallery-4.jpg" alt="Gallery Photo 4"></div>
             <div class="gallery-item"><img src="images/gallery-5.jpg" alt="Gallery Photo 5"></div>
