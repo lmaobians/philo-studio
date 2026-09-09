@@ -17,7 +17,6 @@ try {
 
     $blocked = [];
 
-    // 1. Fetch Confirmed/Pending Customer Bookings
     $stmt = $db->prepare("
         SELECT schedule_time 
         FROM bookings 
@@ -36,7 +35,6 @@ try {
         }
     }
 
-    // 2. Fetch Admin Blockouts for the same date
     $stmtBlockouts = $db->prepare("
         SELECT start_time, end_time 
         FROM blockout_dates 
@@ -45,7 +43,6 @@ try {
     $stmtBlockouts->execute(['date' => $date]);
     $blockouts = $stmtBlockouts->fetchAll(PDO::FETCH_ASSOC);
 
-    // Operating slots array for reference
     $operatingSlots = [
         '10:00:00', '11:00:00', '12:00:00', 
         '13:00:00', '14:00:00', '15:00:00', 
@@ -56,7 +53,7 @@ try {
         $startTime = $b['start_time'];
         $endTime   = $b['end_time'];
 
-        // If start/end time is missing or set to 00:00:00, block the full day
+        
         $isFullDay = (
             empty($startTime) || 
             empty($endTime) || 
@@ -65,10 +62,9 @@ try {
 
         if ($isFullDay) {
             $blocked = array_merge($blocked, $operatingSlots);
-            break; // Whole day is blocked, no need to check further blockouts
+            break;
         }
 
-        // Handle partial range blockouts (e.g. 09:00 AM - 12:00 PM)
         $blockStart = strtotime($date . ' ' . $startTime);
         $blockEnd   = strtotime($date . ' ' . $endTime);
 
@@ -80,7 +76,6 @@ try {
         }
     }
 
-    // Format output variants to guarantee Javascript string matching compatibility
     $formattedSlots = [];
     foreach ($blocked as $slotStr) {
         $ts = strtotime($slotStr);

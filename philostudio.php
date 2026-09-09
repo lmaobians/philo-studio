@@ -176,26 +176,26 @@
         <div class="testimonials-grid">
             <div class="testimonial-card">
                 <div class="stars">★★★★★</div>
-                <p>"hehehehe philo"</p>
+                <p>"I really like the service!"</p>
                 <div class="client-info">
-                    <strong>Juan Luna</strong>
+                    <strong>Anne Luna</strong>
                     <span>Model & Influencer</span>
                 </div>
             </div>
             <div class="testimonial-card">
                 <div class="stars">★★★★★</div>
-                <p>"yes nice"</p>
+                <p>"Affordable and professional setup."</p>
                 <div class="client-info">
-                    <strong>Jose Rizal</strong>
-                    <span>Rizzler</span>
+                    <strong>Ding Dong Ang</strong>
+                    <span>Sibulan Councilor</span>
                 </div>
             </div>
             <div class="testimonial-card">
                 <div class="stars">★★★★★</div>
-                <p>"oo on cloud"</p>
+                <p>"Pet friendly and great service!"</p>
                 <div class="client-info">
-                    <strong>Emilio Aguinaldo</strong>
-                    <span>Cosplayer</span>
+                    <strong>Princess Mae</strong>
+                    <span>Mother of two (dogs)</span>
                 </div>
             </div>
         </div>
