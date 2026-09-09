@@ -132,24 +132,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             renderCalendar();
         }
 
-        // Converts time string (HH:MM:SS, HH:MM, or 12h format) into total minutes from midnight
-        function parseToMinutes(timeStr) {
-            if (!timeStr) return null;
-            let str = timeStr.toString().trim().toUpperCase();
-            let isPM = str.includes('PM');
-            let isAM = str.includes('AM');
-            
-            str = str.replace(/(AM|PM)/g, '').trim();
-            let parts = str.split(':');
-            let h = parseInt(parts[0], 10);
-            let m = parts[1] ? parseInt(parts[1], 10) : 0;
-
-            if (isPM && h < 12) h += 12;
-            if (isAM && h === 12) h = 0;
-
-            return (h * 60) + m;
-        }
-
         async function generateTimeSlots() {
             const container = document.getElementById('slots_container');
             container.innerHTML = '';
@@ -165,18 +147,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 console.error("Error fetching booked slots:", err);
             }
 
-            // Convert all incoming blocked time items into numeric minute values
-            const blockedMinutes = Array.isArray(bookedSlots) 
-                ? bookedSlots.map(s => parseToMinutes(s)).filter(m => m !== null)
-                : [];
-
             const now = new Date();
             const todayFormatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
             const isToday = (selectedDateStr === todayFormatted);
             const currentMinutesNow = (now.getHours() * 60) + now.getMinutes();
 
-            let start = 10 * 60; // 10:00 AM
-            let end = 20 * 60;   // 8:00 PM
+            let start = 10 * 60;
+            let end = 20 * 60;
             let availableSlotsCount = 0;
 
             while (start < end) {
@@ -191,14 +168,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 let ampm = hours < 12 ? 'AM' : 'PM';
 
                 let timePadded12 = `${String(displayHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${ampm}`;
+                let timeUnpadded12 = `${displayHours}:${String(minutes).padStart(2, '0')} ${ampm}`;
                 let rawValue = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+                let rawValueShort = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 
                 let btn = document.createElement('div');
                 btn.className = 'slot-btn';
                 btn.innerText = timePadded12;
 
-                // Check numeric match: if current slot starting minute is in blocked array
-                let isBooked = blockedMinutes.includes(start);
+                let isBooked = false;
+                if (Array.isArray(bookedSlots)) {
+                    isBooked = bookedSlots.some(slot => {
+                        let s = String(slot).trim().toLowerCase();
+                        return s === rawValue.toLowerCase() ||
+                               s === rawValueShort.toLowerCase() ||
+                               s === timePadded12.toLowerCase() ||
+                               s === timeUnpadded12.toLowerCase();
+                    });
+                }
 
                 if (isBooked) {
                     btn.classList.add('disabled');
@@ -222,7 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if (availableSlotsCount === 0) {
-                container.innerHTML = '<p style="grid-column: 1 / -1; color: #721c24; background: #f8d7da; padding: 12px; border-radius: 8px; font-size: 0.9rem; text-align: center;">No available time slots remaining for this date. Please select another date.</p>';
+                container.innerHTML = '<p style="grid-column: 1 / -1; color: #721c24; background: #f8d7da; padding: 12px; border-radius: 8px; font-size: 0.9rem;">No available time slots remaining for this date. Please select another date.</p>';
             }
         }
 

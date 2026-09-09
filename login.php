@@ -15,6 +15,7 @@ if (!is_string($redirect) || preg_match('/[\r\n]/', $redirect) || str_starts_wit
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
+    $is_admin = false;
 
     if (!empty($email) && !empty($password)) {
         $database = new Database();
@@ -24,7 +25,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$email]);
         $user = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password'])) {
+        if (!$user && strcasecmp($email, 'admin@philostudio.com') === 0) {
+            $adminStmt = $db->prepare("SELECT admin_id, username, password, full_name FROM admins WHERE LOWER(username) = LOWER(?) LIMIT 1");
+            $adminStmt->execute(['admin']);
+            $admin = $adminStmt->fetch();
+
+            if ($admin && password_verify($password, $admin['password'])) {
+                $is_admin = true;
+                session_regenerate_id(true);
+                $_SESSION['admin_id']       = $admin['admin_id'];
+                $_SESSION['admin_user']     = $admin['username'];
+                $_SESSION['admin_name']     = $admin['full_name'];
+                $_SESSION['customer_email'] = 'admin@philostudio.com';
+            }
+        }
+
+        if ($is_admin) {
+            header("Location: admin/dashboard.php");
+            exit();
+        } elseif ($user && password_verify($password, $user['password'])) {
             session_regenerate_id(true);
             $_SESSION['customer_id']    = $user['customer_id'];
             $_SESSION['customer_name']  = $user['name'];
