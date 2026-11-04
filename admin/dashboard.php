@@ -146,6 +146,7 @@ $search_query = $_GET['search'] ?? '';
 $status_filter = $_GET['status_filter'] ?? 'All';
 $bookings = getFilteredBookings($db, $search_query, $status_filter);
 
+// Existing bookings loop in dashboard.php
 $calendar_events = [];
 foreach ($bookings as $b) {
     if ($b['booking_status'] === 'Cancelled') continue;
@@ -175,6 +176,37 @@ foreach ($bookings as $b) {
                 'proof' => $b['payment_proof'] ? '../'.$b['payment_proof'] : null,
                 'status' => $b['booking_status']
             ]
+        ]
+    ];
+}
+
+// ADD THIS BLOCK BELOW TO FETCH & DISPLAY BLOCKOUT DATES:
+$blockout_stmt = $db->query("SELECT * FROM blockout_dates");
+$blockouts = $blockout_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($blockouts as $blk) {
+    // If times are set, build datetime ISO strings; otherwise block out full day
+    if (!empty($blk['start_time']) && !empty($blk['end_time'])) {
+        $b_start = $blk['blockout_date'] . 'T' . $blk['start_time'];
+        $b_end   = $blk['blockout_date'] . 'T' . $blk['end_time'];
+        $all_day = false;
+    } else {
+        $b_start = $blk['blockout_date'];
+        $b_end   = $blk['blockout_date'];
+        $all_day = true;
+    }
+
+    $calendar_events[] = [
+        'title' => 'BLOCKED: ' . ($blk['reason'] ?: 'Unavailable'),
+        'start' => $b_start,
+        'end'   => $b_end,
+        'allDay' => $all_day,
+        'backgroundColor' => '#fef2f2',
+        'borderColor' => '#fecaca',
+        'textColor' => '#991b1b',
+        'extendedProps' => [
+            'statusBadge' => 'Blockout',
+            'raw' => null
         ]
     ];
 }
@@ -555,8 +587,12 @@ foreach ($bookings as $b) {
                     return { domNodes: [mainEl] };
                 },
                 eventClick: function(info) {
-                    showBookingDetails(info.event.extendedProps.raw);
+                    if (info.event.extendedProps.statusBadge === 'Blockout') {
+                    alert(info.event.title);
+                    return;
                 }
+                showBookingDetails(info.event.extendedProps.raw);
+            }
             });
         });
 

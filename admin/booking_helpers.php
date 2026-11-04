@@ -100,9 +100,9 @@ function getFilteredPackages(PDO $db, string $search = ''): array {
 
 function isSlotBlackedOut(PDO $db, string $date, string $time): bool {
     $stmt = $db->prepare("
-        SELECT COUNT(*) FROM blackout_dates
-        WHERE blackout_date = ?
-    AND (
+        SELECT COUNT(*) FROM blockout_dates
+        WHERE blockout_date = ?
+        AND (
             (start_time IS NULL AND end_time IS NULL)
             OR (? BETWEEN start_time AND end_time)
         )
