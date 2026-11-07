@@ -1,8 +1,12 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+// Must be line 1 to catch output buffering immediately
+if (ob_get_level() === 0) {
+    ob_start();
 }
 
+if (session_status() === PHP_SESSION_NONE) {
+    @session_start();
+}
 $current_page = basename($_SERVER['PHP_SELF']);
 
 function isActive($target_pages, $current_page) {
@@ -12,8 +16,7 @@ function isActive($target_pages, $current_page) {
     return ($current_page === $target_pages) ? 'active' : '';
 }
 ?>
-
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/style.css">
 <header class="navbar">
     <a href="philostudio.php" class="header-logo">
         <img src="images/header-logo.jpg" alt="Philo Studio Logo">

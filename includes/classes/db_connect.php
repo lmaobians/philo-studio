@@ -1,8 +1,11 @@
 <?php
-$host = 'localhost';
-$db   = 'philo_studio';
-$user = 'root';
-$pass = '';
+// Docker container service name
+$host = 'database'; 
+// Matches MYSQL_DATABASE in docker-compose.yml
+$db   = 'philostudio'; 
+// Matches MYSQL_USER and MYSQL_PASSWORD in docker-compose.yml
+$user = 'philo_user'; 
+$pass = 'philo_password'; 
 
 $dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
 $options = [
