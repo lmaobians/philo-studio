@@ -127,6 +127,8 @@
 
     </section>
 
+<div style="margin-bottom: 4rem;"></div>
+
 <?php include 'includes/footer.php'; ?>
 
 <script>

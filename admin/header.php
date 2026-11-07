@@ -2,9 +2,10 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+ob_start();
+
 require_once '../config/database.php';
 
-// Redirect to root login page if not logged in
 if (!isset($_SESSION['admin_id'])) {
     header("Location: ../login.php");
     exit();

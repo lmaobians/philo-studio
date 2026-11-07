@@ -70,7 +70,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     <summary class="faq-question">What kind of shots do you offer?</summary>
                     <div class="faq-answer">
                         <p>We only offer <strong>portrait shots (up to mid-body)</strong>.</p>
-                        <p>Full body shots (where the floor is visible) are not offered.</p>
+                        <p>Full body shots (where the floor is visible) are offered for the FULL GRID PACKAGES.</p>
                     </div>
                 </details>
             </div>

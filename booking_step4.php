@@ -16,22 +16,22 @@ $db = $database->getConnection();
 
 $cust_stmt = $db->prepare("SELECT full_name, email, phone FROM customers WHERE customer_id = ? LIMIT 1");
 $cust_stmt->execute([$customer_id]);
-$customer = $cust_stmt->fetch();
+$customer = $cust_stmt->fetch(PDO::FETCH_ASSOC);
 
 $pkg      = $_SESSION['booking_package'];
 $date     = $_SESSION['booking_date'];
 $time     = $_SESSION['booking_time'];
 $backdrop = $_SESSION['booking_backdrop'];
-$has_pets = $_SESSION['booking_has_pets'];
-$pet_info = $_SESSION['booking_pet_details'];
+$has_pets = $_SESSION['booking_has_pets'] ?? 'No';
+$pet_info = $_SESSION['booking_pet_details'] ?? '';
 
 $total_amount = floatval($pkg['price'] ?? $pkg['package_price'] ?? 0);
 
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $payment_mode = $_POST['payment_mode'];
-    $consent      = $_POST['privacy_consent'];
+    $payment_mode = $_POST['payment_mode'] ?? '';
+    $consent      = $_POST['privacy_consent'] ?? '';
 
     $payment_proof_path = '';
     if (isset($_FILES['payment_proof']) && $_FILES['payment_proof']['error'] === UPLOAD_ERR_OK) {
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($has_pets === 'Yes' && !empty($pet_info)) {
             $notes .= " ({$pet_info})";
         }
-        $notes .= " | Payment: {$payment_mode} | Social Media Consent: {$consent}";
+        $notes .= " | Payment: {$payment_mode} | Social Media Consent: {$consent} | Total Amount: ₱" . number_format($total_amount, 2);
 
         $check = $db->prepare("SELECT booking_id FROM bookings WHERE schedule_date = ? AND schedule_time = ? AND UPPER(TRIM(booking_status)) IN ('PENDING', 'CONFIRMED') LIMIT 1");
         $check->execute([$date, $time]);
@@ -78,12 +78,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $booking_ref = 'BK-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 6));
 
-            $query = "INSERT INTO bookings (booking_reference, customer_id, package_id, schedule_date, schedule_time, participants, total_amount, payment_status, notes, payment_proof, booking_status) 
-                    VALUES (?, ?, ?, ?, ?, 1, ?, 'Paid', ?, ?, 'Pending')";
+            // Check columns present in the 'bookings' table
+            $col_stmt = $db->query("SHOW COLUMNS FROM bookings");
+            $columns  = $col_stmt->fetchAll(PDO::FETCH_COLUMN);
 
-            $stmt = $db->prepare($query);
+            $has_participants   = in_array('participants', $columns);
+            $has_total_amount   = in_array('total_amount', $columns);
+            $has_payment_status = in_array('payment_status', $columns);
 
-            if ($stmt->execute([$booking_ref, $customer_id, $pkg['package_id'], $date, $time, $total_amount, $notes, $payment_proof_path])) {
+            // Construct insert statement dynamically based on table columns
+            $insert_fields = ['booking_reference', 'customer_id', 'package_id', 'schedule_date', 'schedule_time', 'notes', 'payment_proof', 'booking_status'];
+            $insert_params = [':ref' => $booking_ref, ':cust_id' => $customer_id, ':pkg_id' => $pkg['package_id'], ':date' => $date, ':time' => $time, ':notes' => $notes, ':proof' => $payment_proof_path, ':status' => 'Pending'];
+
+            if ($has_participants) {
+                $insert_fields[] = 'participants';
+                $insert_params[':participants'] = 1;
+            }
+            if ($has_total_amount) {
+                $insert_fields[] = 'total_amount';
+                $insert_params[':total_amount'] = $total_amount;
+            }
+            if ($has_payment_status) {
+                $insert_fields[] = 'payment_status';
+                $insert_params[':payment_status'] = 'Paid';
+            }
+
+            $field_list = implode(', ', $insert_fields);
+            $param_list = implode(', ', array_keys($insert_params));
+
+            $query = "INSERT INTO bookings ({$field_list}) VALUES ({$param_list})";
+            $stmt  = $db->prepare($query);
+
+            if ($stmt->execute($insert_params)) {
                 unset($_SESSION['booking_package'], $_SESSION['booking_date'], $_SESSION['booking_time'], $_SESSION['booking_backdrop'], $_SESSION['booking_has_pets'], $_SESSION['booking_pet_details']);
                 
                 $_SESSION['booking_success'] = "Your slot has been reserved! We will verify your payment shortly.";
