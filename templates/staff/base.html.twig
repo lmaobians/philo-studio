@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ page_title|default('Staff Portal') }} | PHILO Studio{% endblock %}
+
+{% block body_class %}admin-page staff-page{% endblock %}
+
+{% block body %}
+    {% set currentRoute = app.request.attributes.get('_route') %}
+
+    <nav class="admin-nav">
+        <div class="admin-brand">
+            <span>STAFF PORTAL</span>
+        </div>
+
+        <div class="admin-nav-links">
+            <a href="{{ path('staff_dashboard') }}" class="nav-link {{ currentRoute == 'staff_dashboard' ? 'active' : '' }}">Dashboard</a>
+            <a href="{{ path('staff_records') }}" class="nav-link {{ currentRoute in ['staff_records', 'staff_booking_edit', 'staff_blockout_edit', 'staff_booking_new', 'staff_blockout_new'] ? 'active' : '' }}">My Records</a>
+            <a href="{{ path('account_profile') }}" class="nav-link {{ currentRoute == 'account_profile' ? 'active' : '' }}">Profile</a>
+            <a href="{{ path('account_password') }}" class="nav-link {{ currentRoute == 'account_password' ? 'active' : '' }}">Change Password</a>
+        </div>
+
+        <div class="topbar-profile">
+            <div class="profile-info">
+                <span class="user-role">Staff Member</span>
+                <a href="{{ path('account_profile') }}" class="user-name" style="color: inherit; text-decoration: none;">{{ app.user.fullName ?: app.user.username ?: 'Staff' }}</a>
+            </div>
+            <a href="{{ path('staff_logout') }}" class="btn-logout" title="Log Out">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>Log Out</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        {% for message in app.flashes('staff_msg') %}
+            <div class="alert-toast">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('account_msg') %}
+            <div class="alert-toast">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="alert-toast alert-toast-error">{{ message }}</div>
+        {% endfor %}
+
+        {% block staff_body %}{% endblock %}
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    {% block staff_javascripts %}{% endblock %}
+{% endblock %}

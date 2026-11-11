@@ -1,0 +1,116 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = 'User Management' %}
+
+{% block admin_body %}
+    <div class="action-bar">
+        <div>
+            <h1 class="page-title-pink">User Management</h1>
+            <p class="admin-page-subtitle">Create and manage administrator and staff accounts.</p>
+        </div>
+        <div class="action-btn-group">
+            <a href="{{ path('admin_user_new') }}" class="btn-create" style="text-decoration: none;">+ Create User Account</a>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <form method="GET" action="{{ path('admin_user_index') }}" class="filter-bar">
+            <input type="text" name="search" value="{{ search }}" placeholder="Search name, username or email..." class="custom-input" style="max-width: 320px; flex: 1;">
+
+            <select name="role" class="custom-select" style="max-width: 170px;">
+                <option value="All" {{ role == 'All' ? 'selected' : '' }}>All Roles</option>
+                <option value="ROLE_ADMIN" {{ role == 'ROLE_ADMIN' ? 'selected' : '' }}>Administrator</option>
+                <option value="ROLE_STAFF" {{ role == 'ROLE_STAFF' ? 'selected' : '' }}>Staff</option>
+            </select>
+
+            <select name="status" class="custom-select" style="max-width: 170px;">
+                <option value="All" {{ status == 'All' ? 'selected' : '' }}>All Statuses</option>
+                <option value="Active" {{ status == 'Active' ? 'selected' : '' }}>Active</option>
+                <option value="Disabled" {{ status == 'Disabled' ? 'selected' : '' }}>Disabled</option>
+                <option value="Archived" {{ status == 'Archived' ? 'selected' : '' }}>Archived</option>
+            </select>
+
+            <button type="submit" class="btn-act btn-approve">Search</button>
+
+            {% if search is not empty or role != 'All' or status != 'All' %}
+                <a href="{{ path('admin_user_index') }}" class="btn-act btn-cancel" style="display: inline-flex; align-items: center; text-decoration: none;">Reset</a>
+            {% endif %}
+        </form>
+
+        <div class="list-summary">
+            <strong>{{ total }}</strong> user account{{ total == 1 ? '' : 's' }} found
+            {% if totalPages > 1 %}<span class="admin-detail"> · page {{ page }} of {{ totalPages }}</span>{% endif %}
+        </div>
+
+        <table class="booking-table">
+            <thead>
+                <tr>
+                    <th>FULL NAME</th>
+                    <th>USERNAME / EMAIL</th>
+                    <th>ROLE</th>
+                    <th>STATUS</th>
+                    <th>DATE CREATED</th>
+                    <th class="text-right">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if users is empty %}
+                    <tr><td colspan="6" class="admin-empty-state">No user accounts found matching your filters.</td></tr>
+                {% else %}
+                    {% for user in users %}
+                        {% set isSelf = app.user.adminId == user.adminId %}
+                        <tr>
+                            <td>
+                                <strong>{{ user.fullName }}</strong>
+                                {% if isSelf %}<span class="self-badge">You</span>{% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ user.username }}</strong><br>
+                                <span class="admin-detail">{{ user.email ?: 'No email on file' }}</span>
+                            </td>
+                            <td>
+                                <span class="creator-badge creator-{{ user.role == 'ROLE_ADMIN' ? 'admin' : 'staff' }}">{{ user.roleLabel }}</span>
+                            </td>
+                            <td>
+                                <span class="badge-status status-{{ user.status|lower }}">{{ user.status }}</span>
+                            </td>
+                            <td>{{ user.createdAt ? user.createdAt|date('M d, Y g:i A') : '—' }}</td>
+                            <td class="text-right">
+                                <div class="action-btn-group">
+                                    <a href="{{ path('admin_user_edit', {id: user.adminId}) }}" class="btn-act btn-approve" style="text-decoration: none;">Edit</a>
+
+                                    {% if not isSelf %}
+                                        <form method="POST" action="{{ path('admin_user_delete', {id: user.adminId}) }}" class="admin-inline" onsubmit="return confirm('Delete the account for {{ user.username|e('js') }}? Existing booking and blockout records will be preserved. This action cannot be undone.');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.adminId) }}">
+                                            <button type="submit" class="btn-act btn-delete">Delete</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+
+        {% if totalPages > 1 %}
+            <div class="pagination">
+                {% if page > 1 %}
+                    <a href="{{ path('admin_user_index', {search: search, role: role, status: status, page: page - 1}) }}" class="pagination-link">&larr; Previous</a>
+                {% else %}
+                    <span class="pagination-link disabled">&larr; Previous</span>
+                {% endif %}
+
+                {% for p in 1..totalPages %}
+                    <a href="{{ path('admin_user_index', {search: search, role: role, status: status, page: p}) }}" class="pagination-link {{ p == page ? 'active' : '' }}">{{ p }}</a>
+                {% endfor %}
+
+                {% if page < totalPages %}
+                    <a href="{{ path('admin_user_index', {search: search, role: role, status: status, page: page + 1}) }}" class="pagination-link">Next &rarr;</a>
+                {% else %}
+                    <span class="pagination-link disabled">Next &rarr;</span>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

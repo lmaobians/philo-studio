@@ -1,13 +1,21 @@
 # Environment & Sensitive Configs
-.env
+.env.local
+.env.*.local
+.env.dev
 config/database.php
 
 # Dependency Folders
 /vendor/
 
+# Symfony Runtime Cache (also a Docker volume in development)
+/var/
+
 # User Uploaded Media
-/uploads/*
-!/uploads/.gitkeep
+# Payment proofs and admin-uploaded package images are runtime data, not
+# source code. They must not be committed to Git.
+/public/uploads/*
+!/public/uploads/.gitignore
+!/public/uploads/.gitkeep
 
 # Operating System & IDE Artifacts
 .DS_Store

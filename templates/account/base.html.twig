@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ page_title|default('My Account') }} | PHILO Studio{% endblock %}
+
+{% block body_class %}admin-page{% endblock %}
+
+{% block body %}
+    {% set currentRoute = app.request.attributes.get('_route') %}
+    {% set isAdmin = app.user and app.user.isAdmin %}
+
+    <nav class="admin-nav">
+        <div class="admin-brand">
+            <span>{{ isAdmin ? 'ADMIN CONTROL CENTER' : 'STAFF PORTAL' }}</span>
+        </div>
+
+        <div class="admin-nav-links">
+            {% if isAdmin %}
+                <a href="{{ path('admin_overview') }}" class="nav-link">Dashboard</a>
+                <a href="{{ path('admin_dashboard') }}" class="nav-link">Records</a>
+                <a href="{{ path('admin_user_index') }}" class="nav-link">Users</a>
+            {% else %}
+                <a href="{{ path('staff_dashboard') }}" class="nav-link">Dashboard</a>
+                <a href="{{ path('staff_records') }}" class="nav-link">My Records</a>
+            {% endif %}
+            <a href="{{ path('account_profile') }}" class="nav-link {{ currentRoute == 'account_profile' ? 'active' : '' }}">Profile</a>
+            <a href="{{ path('account_password') }}" class="nav-link {{ currentRoute == 'account_password' ? 'active' : '' }}">Change Password</a>
+        </div>
+
+        <div class="topbar-profile">
+            <div class="profile-info">
+                <span class="user-role">{{ app.user.roleLabel|default('Account') }}</span>
+                <span class="user-name">{{ app.user.fullName ?: app.user.username }}</span>
+            </div>
+            <a href="{{ isAdmin ? path('admin_logout') : path('staff_logout') }}" class="btn-logout" title="Log Out">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>Log Out</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="admin-container">
+        {% for message in app.flashes('account_msg') %}
+            <div class="alert-toast">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="alert-toast alert-toast-error">{{ message }}</div>
+        {% endfor %}
+
+        {% block account_body %}{% endblock %}
+    </div>
+{% endblock %}

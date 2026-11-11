@@ -1,0 +1,97 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = 'Manage Blockout Dates' %}
+
+{% block admin_body %}
+    <div class="action-bar">
+        <h1 class="page-title-pink">Blockout Dates & Holidays</h1>
+    </div>
+
+    <div class="table-card blockout-card">
+        <h3 class="card-subtitle">Add Blocked Date / Range</h3>
+        <form method="POST" action="{{ path('admin_blockouts') }}" class="blockout-form">
+            <input type="hidden" name="_token" value="{{ csrf_token('admin_action') }}">
+            <input type="hidden" name="action" value="add_blockout">
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" name="blockout_date" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Start Time <span class="optional-text">(Optional)</span></label>
+                    <input type="time" name="start_time" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label>End Time <span class="optional-text">(Optional)</span></label>
+                    <input type="time" name="end_time" class="form-input">
+                </div>
+
+                <div class="form-group span-reason">
+                    <label>Reason</label>
+                    <input type="text" name="reason" class="form-input" placeholder="e.g., Studio Maintenance or Holiday">
+                </div>
+
+                <div class="form-group btn-container">
+                    <button type="submit" class="btn-create btn-block-slot">Block Slot</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-card">
+        <table class="booking-table">
+            <thead>
+                <tr>
+                    <th>DATE</th>
+                    <th>TIME RANGE</th>
+                    <th>REASON</th>
+                    <th>CREATED BY</th>
+                    <th class="text-right">ACTION</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if blockouts is empty %}
+                    <tr>
+                        <td colspan="5" class="text-center empty-msg">No blockout dates or holidays configured yet.</td>
+                    </tr>
+                {% else %}
+                    {% for blockout in blockouts %}
+                        <tr>
+                            <td><strong>{{ blockout.blockoutDate ? blockout.blockoutDate|date('M d, Y') : '' }}</strong></td>
+                            <td>
+                                {% if blockout.startTime and blockout.endTime %}
+                                    {{ blockout.startTime|date('g:i A') }} - {{ blockout.endTime|date('g:i A') }}
+                                {% else %}
+                                    <span class="badge-full-day">Full Day</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ blockout.reason }}</td>
+                            <td>
+                                {% if blockout.admin %}
+                                    <span class="creator-badge creator-{{ blockout.admin.role == 'ROLE_STAFF' ? 'staff' : 'admin' }}">{{ blockout.admin.roleLabel }}</span><br>
+                                    <span class="admin-detail">{{ blockout.admin.fullName }}</span>
+                                {% else %}
+                                    <span class="admin-detail">&mdash;</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-right">
+                                <div class="action-btn-group">
+                                    <a href="{{ path('admin_blockout_edit', {id: blockout.blockoutId}) }}" class="btn-act btn-approve" style="text-decoration: none;">Edit</a>
+                                    <form method="POST" action="{{ path('admin_blockouts') }}" class="admin-inline" onsubmit="return confirm('Delete this block?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_action') }}">
+                                        <input type="hidden" name="action" value="delete_blockout">
+                                        <input type="hidden" name="blockout_id" value="{{ blockout.blockoutId }}">
+                                        <button type="submit" class="btn-act btn-delete">Remove</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

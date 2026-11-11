@@ -1,0 +1,182 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = 'Admin Dashboard' %}
+
+{% block admin_body %}
+    <div class="dashboard-hero">
+        <div>
+            <span class="dashboard-eyebrow">ADMIN CONTROL CENTER</span>
+            <h1 class="page-title-pink">Admin Dashboard</h1>
+            <p class="admin-page-subtitle">A live overview of studio bookings, client accounts and team access.</p>
+        </div>
+        <div class="action-btn-group dashboard-hero-actions">
+            <a href="{{ path('admin_dashboard') }}" class="btn-create" style="text-decoration: none;">Open Records</a>
+            <a href="{{ path('admin_user_index') }}" class="btn-act btn-approve dashboard-secondary-btn">Manage Users</a>
+        </div>
+    </div>
+
+    {% if pendingBookings > 0 %}
+        <div class="attention-banner">
+            <div class="attention-copy">
+                <strong>{{ pendingBookings }} booking{{ pendingBookings == 1 ? '' : 's' }} awaiting confirmation</strong>
+                <span>Review payment proofs and confirm upcoming studio sessions.</span>
+            </div>
+            <a href="{{ path('admin_dashboard', {status_filter: 'Pending'}) }}" class="btn-act btn-approve">Review Pending &rarr;</a>
+        </div>
+    {% endif %}
+
+    <div class="stats-grid stats-grid-4">
+        <div class="stat-card stat-card-accent">
+            <div class="label">TOTAL BOOKINGS</div>
+            <div class="val">{{ totalBookings }}</div>
+            <div class="stat-note">{{ staffCreatedBookings }} created by staff</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">PENDING REVIEW</div>
+            <div class="val admin-pending-value">{{ pendingBookings }}</div>
+            <div class="stat-note">Needs confirmation</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">CONFIRMED</div>
+            <div class="val admin-confirmed-value">{{ confirmedBookings }}</div>
+            <div class="stat-note">Scheduled sessions</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">REGISTERED CLIENTS</div>
+            <div class="val">{{ totalClients }}</div>
+            <div class="stat-note">{{ totalRecords }} total studio records</div>
+        </div>
+    </div>
+
+    <div class="dashboard-columns">
+        <div class="table-card dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Recent Bookings</h2>
+                    <p class="panel-subtitle">The latest reservations across client, staff and admin channels.</p>
+                </div>
+                <a href="{{ path('admin_dashboard') }}" class="panel-link">View all records &rarr;</a>
+            </div>
+            <div class="table-scroll">
+                <table class="booking-table">
+                    <thead>
+                        <tr>
+                            <th>REFERENCE</th>
+                            <th>CLIENT</th>
+                            <th>CREATED BY</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recentBookings is empty %}
+                            <tr><td colspan="4" class="admin-empty-state">No booking records yet.</td></tr>
+                        {% else %}
+                            {% for booking in recentBookings %}
+                                {% set status = booking.bookingStatus ?: 'Pending' %}
+                                <tr>
+                                    <td><strong>{{ booking.displayReference }}</strong></td>
+                                    <td>
+                                        <strong>{{ booking.customer ? (booking.customer.fullName ?: 'Client') : 'Client' }}</strong><br>
+                                        <span class="admin-detail">{{ booking.scheduleDate ? booking.scheduleDate|date('M d, Y') : '' }}{% if booking.scheduleTime %} · {{ booking.scheduleTime|date('g:i A') }}{% endif %}</span>
+                                    </td>
+                                    <td>
+                                        {% if booking.admin %}
+                                            <span class="creator-badge creator-{{ booking.admin.role == 'ROLE_STAFF' ? 'staff' : 'admin' }}">{{ booking.admin.roleLabel }}</span><br>
+                                            <span class="admin-detail">{{ booking.admin.fullName }}</span>
+                                        {% else %}
+                                            <span class="admin-detail">Client self-booking</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><span class="badge-status status-{{ status|lower }}">{{ status }}</span></td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="panel-footer">
+                <a href="{{ path('admin_dashboard') }}" class="btn-act btn-approve" style="text-decoration: none;">Open Booking Management</a>
+            </div>
+        </div>
+
+        <div class="dashboard-side">
+            <div class="table-card dashboard-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Operations</h2>
+                        <p class="panel-subtitle">Common studio tasks.</p>
+                    </div>
+                </div>
+                <div class="quick-actions">
+                    <a href="{{ path('admin_dashboard') }}" class="quick-action">
+                        <span class="quick-action-title">Create Walk-In Booking</span>
+                        <span class="quick-action-note">Record an on-site client reservation</span>
+                    </a>
+                    <a href="{{ path('admin_blockouts') }}" class="quick-action">
+                        <span class="quick-action-title">Manage Blockouts</span>
+                        <span class="quick-action-note">Block holidays, maintenance or unavailable slots</span>
+                    </a>
+                    <a href="{{ path('admin_package_new') }}" class="quick-action">
+                        <span class="quick-action-title">Add Package</span>
+                        <span class="quick-action-note">Create a new studio package</span>
+                    </a>
+                    <a href="{{ path('admin_user_new') }}" class="quick-action">
+                        <span class="quick-action-title">Create Team Account</span>
+                        <span class="quick-action-note">Add an administrator or staff member</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="table-card dashboard-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Account Health</h2>
+                        <p class="panel-subtitle">{{ totalUsers }} team account{{ totalUsers == 1 ? '' : 's' }}</p>
+                    </div>
+                    <a href="{{ path('admin_user_index') }}" class="panel-link">Manage &rarr;</a>
+                </div>
+                <div class="side-metrics">
+                    <div class="side-metric">
+                        <span>Administrators</span>
+                        <strong>{{ totalAdmins }}</strong>
+                    </div>
+                    <div class="side-metric">
+                        <span>Staff members</span>
+                        <strong>{{ totalStaff }}</strong>
+                    </div>
+                    <div class="side-metric">
+                        <span>Active accounts</span>
+                        <strong>{{ activeAccounts }}</strong>
+                    </div>
+                    <div class="side-metric">
+                        <span>Disabled / archived</span>
+                        <strong>{{ disabledAccounts }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-card dashboard-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Studio Snapshot</h2>
+                        <p class="panel-subtitle">{{ totalRecords }} records in total.</p>
+                    </div>
+                </div>
+                <div class="side-metrics">
+                    <div class="side-metric">
+                        <span>Packages</span>
+                        <strong>{{ totalPackages }} <small>{{ activePackages }} active</small></strong>
+                    </div>
+                    <div class="side-metric">
+                        <span>Blockout dates</span>
+                        <strong>{{ totalBlockouts }}</strong>
+                    </div>
+                    <div class="side-metric">
+                        <span>Staff-created bookings</span>
+                        <strong>{{ staffCreatedBookings }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends 'staff/base.html.twig' %}
+
+{% set page_title = 'My Records' %}
+
+{% block staff_body %}
+    <div class="action-bar">
+        <div>
+            <h1 class="page-title-pink">My Records</h1>
+            <p class="admin-page-subtitle">Only records you created are listed here. Other staff and admin records are not accessible.</p>
+        </div>
+        <div class="action-btn-group">
+            <a href="{{ path('staff_booking_new') }}" class="btn-create" style="text-decoration: none;">+ Walk-In Booking</a>
+            <a href="{{ path('staff_blockout_new') }}" class="btn-act btn-approve" style="display: inline-flex; align-items: center; text-decoration: none;">+ Blockout</a>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <form method="GET" action="{{ path('staff_records') }}" class="filter-bar">
+            <input type="text" name="search" value="{{ search }}" placeholder="Search my records..." class="custom-input" style="max-width: 280px; flex: 1;">
+
+            <select name="type" class="custom-select" style="max-width: 160px;">
+                <option value="all" {{ type == 'all' ? 'selected' : '' }}>All Records</option>
+                <option value="bookings" {{ type == 'bookings' ? 'selected' : '' }}>Bookings Only</option>
+                <option value="blockouts" {{ type == 'blockouts' ? 'selected' : '' }}>Blockouts Only</option>
+            </select>
+
+            <select name="status" class="custom-select" style="max-width: 160px;">
+                <option value="All" {{ status == 'All' ? 'selected' : '' }}>All Statuses</option>
+                <option value="Pending" {{ status == 'Pending' ? 'selected' : '' }}>Pending</option>
+                <option value="Confirmed" {{ status == 'Confirmed' ? 'selected' : '' }}>Confirmed</option>
+                <option value="Cancelled" {{ status == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
+            </select>
+
+            <button type="submit" class="btn-act btn-approve">Search</button>
+
+            {% if search is not empty or status != 'All' or type != 'all' %}
+                <a href="{{ path('staff_records') }}" class="btn-act btn-cancel" style="display: inline-flex; align-items: center; text-decoration: none;">Reset</a>
+            {% endif %}
+        </form>
+
+        <div class="list-summary">
+            <strong>{{ bookings|length }}</strong> booking{{ bookings|length == 1 ? '' : 's' }} ·
+            <strong>{{ blockouts|length }}</strong> blockout{{ blockouts|length == 1 ? '' : 's' }}
+        </div>
+
+        {% if type != 'blockouts' %}
+            <h3 class="card-subtitle">Bookings</h3>
+            <table class="booking-table">
+                <thead>
+                    <tr>
+                        <th>REFERENCE</th>
+                        <th>CLIENT</th>
+                        <th>PACKAGE</th>
+                        <th>DATE &amp; TIME</th>
+                        <th>STATUS</th>
+                        <th class="text-right">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if bookings is empty %}
+                        <tr><td colspan="6" class="admin-empty-state">No bookings match your filters.</td></tr>
+                    {% else %}
+                        {% for booking in bookings %}
+                            {% set status = booking.bookingStatus ?: 'Pending' %}
+                            <tr>
+                                <td><strong>{{ booking.displayReference }}</strong></td>
+                                <td>
+                                    <strong>{{ booking.customer ? (booking.customer.fullName ?: 'Client') : 'Client' }}</strong><br>
+                                    <span class="admin-detail">{{ booking.customer and booking.customer.email ? booking.customer.email : 'N/A' }}</span>
+                                </td>
+                                <td>{{ booking.package ? booking.package.name : 'Studio Package' }}</td>
+                                <td>
+                                    {{ booking.scheduleDate ? booking.scheduleDate|date('M d, Y') : '' }}<br>
+                                    <span class="admin-detail">{{ booking.scheduleTime ? booking.scheduleTime|date('g:i A') : '' }}</span>
+                                </td>
+                                <td><span class="badge-status status-{{ status|lower }}">{{ status }}</span></td>
+                                <td class="text-right">
+                                    <div class="action-btn-group">
+                                        <a href="{{ path('staff_booking_edit', {id: booking.bookingId}) }}" class="btn-act btn-approve" style="text-decoration: none;">Edit</a>
+                                        <form method="POST" action="{{ path('staff_booking_delete', {id: booking.bookingId}) }}" class="admin-inline" onsubmit="return confirm('Delete this booking permanently?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_booking_' ~ booking.bookingId) }}">
+                                            <button type="submit" class="btn-act btn-delete">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        {% endif %}
+
+        {% if type != 'bookings' %}
+            <h3 class="card-subtitle" style="margin-top: 24px;">Blockout Dates</h3>
+            <table class="booking-table">
+                <thead>
+                    <tr>
+                        <th>DATE</th>
+                        <th>TIME RANGE</th>
+                        <th>REASON</th>
+                        <th class="text-right">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if blockouts is empty %}
+                        <tr><td colspan="4" class="admin-empty-state">No blockouts match your filters.</td></tr>
+                    {% else %}
+                        {% for blockout in blockouts %}
+                            <tr>
+                                <td><strong>{{ blockout.blockoutDate ? blockout.blockoutDate|date('M d, Y') : '' }}</strong></td>
+                                <td>
+                                    {% if blockout.startTime and blockout.endTime %}
+                                        {{ blockout.startTime|date('g:i A') }} - {{ blockout.endTime|date('g:i A') }}
+                                    {% else %}
+                                        <span class="badge-full-day">Full Day</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ blockout.reason }}</td>
+                                <td class="text-right">
+                                    <div class="action-btn-group">
+                                        <a href="{{ path('staff_blockout_edit', {id: blockout.blockoutId}) }}" class="btn-act btn-approve" style="text-decoration: none;">Edit</a>
+                                        <form method="POST" action="{{ path('staff_blockout_delete', {id: blockout.blockoutId}) }}" class="admin-inline" onsubmit="return confirm('Delete this blockout entry?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_blockout_' ~ blockout.blockoutId) }}">
+                                            <button type="submit" class="btn-act btn-delete">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+{% endblock %}

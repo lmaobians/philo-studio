@@ -1,0 +1,50 @@
+{% set route = app.request.attributes.get('_route') %}
+{% set bookingRoutes = ['booking_step1', 'booking_step2', 'booking_step3', 'booking_step4'] %}
+<header class="navbar">
+    <a href="{{ path('app_home') }}" class="header-logo">
+        <img src="{{ asset('images/header-logo.jpg') }}" alt="Philo Studio Logo">
+    </a>
+
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <div class="nav-menu" id="navMenu">
+        <nav class="nav-links">
+            <a href="{{ path('app_home') }}" class="{{ route == 'app_home' ? 'active' : '' }}">Home</a>
+            <a href="{{ path('app_packages') }}" class="{{ route in ['app_packages'] or route in bookingRoutes ? 'active' : '' }}">Packages</a>
+            <a href="{{ path('app_gallery') }}" class="{{ route == 'app_gallery' ? 'active' : '' }}">Gallery</a>
+            <a href="{{ path('app_about') }}" class="{{ route == 'app_about' ? 'active' : '' }}">About</a>
+            <a href="{{ path('app_faq') }}" class="{{ route == 'app_faq' ? 'active' : '' }}">FAQ</a>
+            <a href="{{ path('app_contact') }}" class="{{ route == 'app_contact' ? 'active' : '' }}">Contact</a>
+
+            {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('admin_dashboard') }}" class="{{ route starts with 'admin_' ? 'active' : '' }}">Admin Panel</a>
+                <a href="{{ path('admin_logout') }}">Logout</a>
+            {% elseif is_granted('ROLE_CUSTOMER') %}
+                <a href="{{ path('customer_dashboard') }}" class="{{ route == 'customer_dashboard' ? 'active' : '' }}">My Account</a>
+                <a href="{{ path('app_logout') }}">Logout</a>
+            {% else %}
+                <a href="{{ path('app_login') }}" class="{{ route == 'app_login' ? 'active' : '' }}">Login</a>
+            {% endif %}
+        </nav>
+
+        <a href="{{ path('app_packages') }}" class="btn-primary">BOOK NOW</a>
+
+        <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const menuToggle = document.getElementById('menuToggle');
+        const navMenu = document.getElementById('navMenu');
+
+        if (menuToggle && navMenu) {
+        menuToggle.addEventListener('click', () => {
+            menuToggle.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+        }
+    });
+</script>
+    </div>
+</header>

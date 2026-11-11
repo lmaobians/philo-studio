@@ -1,0 +1,86 @@
+{% extends 'account/base.html.twig' %}
+
+{% set page_title = 'My Profile' %}
+
+{% block account_body %}
+    <div class="action-bar">
+        <div>
+            <h1 class="page-title-pink">My Profile</h1>
+            <p class="admin-page-subtitle">Manage your own personal account details.</p>
+        </div>
+        <div class="action-btn-group">
+            <a href="{{ path('account_password') }}" class="btn-act btn-approve" style="display: inline-flex; align-items: center; text-decoration: none;">Change Password</a>
+        </div>
+    </div>
+
+    <div class="dashboard-columns">
+        <div class="table-card dashboard-panel">
+            {% if errors is not empty %}
+                <div class="auth-error" style="margin-bottom: 20px;">
+                    {% for error in errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{{ path('account_profile') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('profile_form') }}">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" name="full_name" class="form-input" maxlength="100" required value="{{ form.fullName }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Username *</label>
+                        <input type="text" name="username" class="form-input" maxlength="50" required value="{{ form.username }}" autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email Address *</label>
+                        <input type="email" name="email" class="form-input" maxlength="180" required value="{{ form.email }}" autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Role</label>
+                        <input type="text" class="form-input" value="{{ account.roleLabel }}" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Account Status</label>
+                        <input type="text" class="form-input" value="{{ account.status }}" disabled>
+                    </div>
+                </div>
+
+                <div class="action-btn-group" style="margin-top: 24px;">
+                    <button type="submit" class="btn-create">Save Profile</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-card dashboard-panel quick-panel">
+            <div class="panel-heading">
+                <h2>Account Summary</h2>
+            </div>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>Role</label>
+                    <p>{{ account.roleLabel }}</p>
+                </div>
+                <div class="detail-item">
+                    <label>Status</label>
+                    <p><span class="badge-status status-{{ account.status|lower }}">{{ account.status }}</span></p>
+                </div>
+                <div class="detail-item">
+                    <label>Account Created</label>
+                    <p>{{ account.createdAt ? account.createdAt|date('M d, Y g:i A') : '—' }}</p>
+                </div>
+                <div class="detail-item">
+                    <label>Last Updated</label>
+                    <p>{{ account.updatedAt ? account.updatedAt|date('M d, Y g:i A') : '—' }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Review & Payment | PHILO Studio{% endblock %}
+
+{% block body_class %}booking-payment-page{% endblock %}
+
+{% block body %}
+    {% include 'partials/header.html.twig' %}
+
+    <div class="booking-container">
+        <div class="step-header">
+            <p class="booking-step-label booking-step-label-short">Step 4 of 4</p>
+            <h1>Review & Finalize Booking</h1>
+        </div>
+
+        {% if error %}
+            <div class="auth-error booking-error">{{ error }}</div>
+        {% endif %}
+
+        <div class="card-panel">
+            <h3 class="booking-summary-title">Booking Summary</h3>
+
+            <div class="summary-card">
+                <div class="summary-row"><span class="summary-label">Name:</span><span class="summary-val">{{ customer.fullName ?: 'Client' }}</span></div>
+                <div class="summary-row"><span class="summary-label">Email:</span><span class="summary-val">{{ customer.email ?: 'N/A' }}</span></div>
+                <div class="summary-row"><span class="summary-label">Phone Number:</span><span class="summary-val">{{ customer.phone ?: 'N/A' }}</span></div>
+                <div class="summary-row"><span class="summary-label">Package:</span><span class="summary-val">{{ package.name }} (₱{{ totalAmount|number_format(0) }})</span></div>
+                <div class="summary-row"><span class="summary-label">Backdrop Color:</span><span class="summary-val">{{ backdrop }}</span></div>
+                <div class="summary-row"><span class="summary-label">Pets (Yes / No):</span><span class="summary-val">{{ hasPets }}</span></div>
+                {% if hasPets == 'Yes' and petInfo %}
+                    <div class="summary-row"><span class="summary-label">Pet Details:</span><span class="summary-val">{{ petInfo }}</span></div>
+                {% endif %}
+                <div class="summary-row"><span class="summary-label">Preferred Date:</span><span class="summary-val">{{ date }}</span></div>
+                <div class="summary-row"><span class="summary-label">Preferred Time:</span><span class="summary-val">{{ time|date('g:i A') }}</span></div>
+            </div>
+
+            <div class="policy-box">
+                <strong class="policy-heading">Mode of Payment Accounts:</strong>
+                <div class="bank-details">
+                    <strong>BDO:</strong> Niña Aliza B. Ramas — 011790056258<br>
+                    <strong>GCASH:</strong> Niña Aliza B. Ramas — 0956 876 6873
+                </div>
+
+                <strong class="policy-heading">Reschedule and Cancellation Policy</strong>
+                <ul class="policy-list">
+                    <li>You may reschedule your slot for free after your payment has been made.</li>
+                    <li>No refunds and rebooking within the lock-in period of 2 days before your reserved time slot.</li>
+                    <li>A rescheduling fee (45% of your package) will be charged should you wish to reschedule your slot after the lock-in period.</li>
+                </ul>
+
+                <strong class="policy-heading">Studio Policy Reminders:</strong>
+                <ul class="policy-list">
+                    <li><strong>Payment Policy:</strong> We allow up to one (1) hour for payment to secure your booking slot.</li>
+                    <li><strong>Grace Period:</strong> We strictly observe a 10-minute grace period per client.</li>
+                </ul>
+
+                <strong class="policy-heading">Please note:</strong>
+                <ul class="policy-list">
+                    <li>The Maximum number of pax depends on your package. Any additional head will be for ₱100.00 each.</li>
+                    <li>Children 2 years old and below are free.</li>
+                    <li>Each slot shall be treated as 1 slot. Not an accumulated slot. This is to provide ample time for the equipment, especially the strobes, to cool down.</li>
+                </ul>
+                <p style="font-size: 0.85rem; color: #666; margin-top: 0.5rem; font-style: italic;">
+                    * You may pay for the add-ons with your chosen package or at the studio on the day of your photo session.
+                </p>
+            </div>
+
+            <form method="POST" action="{{ path('booking_step4') }}" enctype="multipart/form-data">
+                <input type="hidden" name="_token" value="{{ csrf_token('booking_review') }}">
+
+                <div class="form-group payment-form-group">
+                    <label for="payment_mode" class="payment-label">Mode of Payment</label>
+                    <select id="payment_mode" name="payment_mode" class="custom-select" required>
+                        <option value="">-- Choose Payment Option --</option>
+                        <option value="BDO">BDO</option>
+                        <option value="GCash">GCash</option>
+                    </select>
+                </div>
+
+                <div class="form-group payment-form-group">
+                    <label class="payment-file-label">Upload Proof of Payment (Screenshot/Receipt)</label>
+                    <input type="file" name="payment_proof" class="file-input" accept="image/*,.pdf" required>
+                    <span class="payment-file-help">Accepted formats: JPG, PNG, WEBP, PDF.</span>
+                </div>
+
+                <div class="form-group consent-form-group">
+                    <label class="payment-file-label">Privacy and Consent (Required)</label>
+                    <p class="consent-copy">
+                        As we would love to share your cool poses and photos, we value our client's privacy to fulfill our studio's principles which is to provide a safe place for YOU to just BE YOU. PHILO Studio would like to ask for your consent if you're comfortable with us posting your photos taken during your shoot in the studio on our social media accounts (Facebook and Instagram) for content purposes.
+                    </p>
+                    <select name="privacy_consent" class="custom-select" required>
+                        <option value="">-- Choose Yes or No --</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+
+                <div class="booking-form-actions booking-review-actions">
+                    <a href="{{ path('booking_step3') }}" class="btn-primary booking-back-button">&larr; Back</a>
+                    <button type="submit" class="btn-primary booking-submit-button">SUBMIT PROOF & CONFIRM</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

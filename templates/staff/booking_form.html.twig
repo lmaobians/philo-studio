@@ -1,0 +1,89 @@
+{% extends 'staff/base.html.twig' %}
+
+{% set page_title = 'Edit My Booking' %}
+
+{% block staff_body %}
+    <div class="action-bar">
+        <div>
+            <h1 class="page-title-pink">Edit My Booking</h1>
+            <p class="admin-page-subtitle">Reference: <strong>{{ booking.displayReference }}</strong></p>
+        </div>
+        <div class="action-btn-group">
+            <a href="{{ path('staff_records') }}" class="btn-act btn-cancel" style="display: inline-flex; align-items: center; text-decoration: none;">&larr; Back to My Records</a>
+        </div>
+    </div>
+
+    <div class="table-card">
+        {% if errors is not empty %}
+            <div class="auth-error" style="margin-bottom: 20px;">
+                {% for error in errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="detail-grid" style="margin-bottom: 24px;">
+            <div class="detail-item">
+                <label>Client</label>
+                <p>{{ booking.customer ? (booking.customer.fullName ?: 'Client') : 'Client' }}</p>
+            </div>
+            <div class="detail-item">
+                <label>Email</label>
+                <p>{{ booking.customer and booking.customer.email ? booking.customer.email : 'N/A' }}</p>
+            </div>
+            <div class="detail-item">
+                <label>Created By</label>
+                <p>{{ booking.admin ? booking.admin.fullName : '—' }}</p>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ path('staff_booking_edit', {id: booking.bookingId}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('staff_action') }}">
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Schedule Date *</label>
+                    <input type="date" name="schedule_date" class="form-input" required value="{{ booking.scheduleDate ? booking.scheduleDate|date('Y-m-d') : '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Schedule Time *</label>
+                    <input type="time" name="schedule_time" class="form-input" required value="{{ booking.scheduleTime ? booking.scheduleTime|date('H:i') : '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Package *</label>
+                    <select name="package_id" class="form-input" required>
+                        {% for package in packages %}
+                            <option value="{{ package.packageId }}" {{ booking.package and booking.package.packageId == package.packageId ? 'selected' : '' }}>{{ package.name }} (&#8369;{{ package.price|number_format(0) }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Status *</label>
+                    <select name="booking_status" class="form-input" required>
+                        {% for status in ['Pending', 'Confirmed', 'Cancelled'] %}
+                            <option value="{{ status }}" {{ booking.bookingStatus == status ? 'selected' : '' }}>{{ status }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Participants *</label>
+                    <input type="number" name="participants" class="form-input" min="1" required value="{{ booking.participants ?: 1 }}">
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>Notes / Add-ons</label>
+                    <textarea name="notes" class="form-input" rows="4">{{ booking.notes }}</textarea>
+                </div>
+            </div>
+
+            <div class="action-btn-group" style="margin-top: 24px;">
+                <button type="submit" class="btn-create">Save Booking</button>
+                <a href="{{ path('staff_records') }}" class="btn-act btn-cancel" style="display: inline-flex; align-items: center; text-decoration: none;">Cancel</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

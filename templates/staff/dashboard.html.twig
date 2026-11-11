@@ -1,0 +1,436 @@
+{% extends 'staff/base.html.twig' %}
+
+{% set page_title = 'Staff Dashboard' %}
+
+{% block staff_body %}
+    <div class="dashboard-hero">
+        <div>
+            <span class="dashboard-eyebrow">STAFF WORKSPACE</span>
+            <h1 class="page-title-pink">Staff Dashboard</h1>
+            <p class="admin-page-subtitle">View every studio booking and the live calendar. You can edit or delete only the records you created.</p>
+        </div>
+        <div class="action-btn-group dashboard-hero-actions">
+            <a href="{{ path('staff_booking_new') }}" class="btn-create" style="text-decoration: none;">+ New Walk-In Booking</a>
+            <a href="{{ path('staff_blockout_new') }}" class="btn-act btn-approve dashboard-secondary-btn">+ Add Blockout</a>
+        </div>
+    </div>
+
+    <div class="stats-grid stats-grid-4">
+        <div class="stat-card stat-card-accent">
+            <div class="label">ALL BOOKINGS</div>
+            <div class="val">{{ totalBookings }}</div>
+            <div class="stat-note">{{ myBookings }} created by you</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">PENDING REVIEW</div>
+            <div class="val admin-pending-value">{{ pendingBookings }}</div>
+            <div class="stat-note">Awaiting confirmation</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">CONFIRMED</div>
+            <div class="val admin-confirmed-value">{{ confirmedBookings }}</div>
+            <div class="stat-note">Ready for the studio</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">BLOCKOUT DATES</div>
+            <div class="val">{{ totalBlockouts }}</div>
+            <div class="stat-note">{{ myBlockouts }} added by you</div>
+        </div>
+    </div>
+
+    <div class="dashboard-columns staff-dashboard-columns">
+        <div class="table-card dashboard-panel">
+            <div class="panel-heading dashboard-panel-heading">
+                <div>
+                    <h2>All Studio Bookings</h2>
+                    <p class="panel-subtitle">Records from clients, staff and administrators. Editing is limited to your own records.</p>
+                </div>
+                <div class="view-toggle">
+                    <button id="btn-view-table" type="button" class="btn-toggle active" onclick="switchView('table')">List</button>
+                    <button id="btn-view-calendar" type="button" class="btn-toggle" onclick="switchView('calendar')">Calendar</button>
+                </div>
+            </div>
+
+            <div id="view-section-table">
+                <div class="table-scroll">
+                    <table class="booking-table">
+                        <thead>
+                            <tr>
+                                <th>REFERENCE</th>
+                                <th>CLIENT</th>
+                                <th>PACKAGE &amp; SLOT</th>
+                                <th>CREATED BY</th>
+                                <th>STATUS</th>
+                                <th class="text-right">ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if allBookings is empty %}
+                                <tr><td colspan="6" class="admin-empty-state">No booking records yet.</td></tr>
+                            {% else %}
+                                {% for booking in allBookings %}
+                                    {% set customer = booking.customer %}
+                                    {% set package = booking.package %}
+                                    {% set status = booking.bookingStatus ?: 'Pending' %}
+                                    {% set isOwner = booking.admin and staff.adminId and booking.admin.adminId == staff.adminId %}
+                                    {% set bookingJson = {
+                                        'id': booking.bookingId,
+                                        'ref': booking.displayReference,
+                                        'name': customer ? (customer.fullName ?: 'Client') : 'Client',
+                                        'email': customer and customer.email ? customer.email : 'N/A',
+                                        'phone': customer and customer.phone ? customer.phone : 'N/A',
+                                        'package': package ? (package.name ?: 'Studio Package') : 'Studio Package',
+                                        'price': package ? package.price|number_format(0) : '0',
+                                        'date': booking.scheduleDate ? booking.scheduleDate|date('M d, Y') : '',
+                                        'time': booking.scheduleTime ? booking.scheduleTime|date('g:i A') : '',
+                                        'notes': booking.notes ?: 'None',
+                                        'proof': booking.paymentProofUrl,
+                                        'status': status,
+                                        'creator': booking.admin ? booking.admin.fullName : 'Client self-booking',
+                                        'creatorRole': booking.admin ? booking.admin.roleLabel : 'Client',
+                                        'canEdit': isOwner,
+                                        'editUrl': isOwner ? path('staff_booking_edit', {id: booking.bookingId}) : null
+                                    } %}
+                                    <tr class="clickable-row" data-booking="{{ bookingJson|json_encode|e('html_attr') }}">
+                                        <td><strong>{{ booking.displayReference }}</strong></td>
+                                        <td>
+                                            <strong>{{ customer ? (customer.fullName ?: 'Client') : 'Client' }}</strong><br>
+                                            <span class="admin-detail">{{ customer and customer.email ? customer.email : 'N/A' }}</span>
+                                        </td>
+                                        <td>
+                                            <strong>{{ package ? (package.name ?: 'Studio Package') : 'Studio Package' }}</strong><br>
+                                            <span class="admin-detail">
+                                                {{ booking.scheduleDate ? booking.scheduleDate|date('M d, Y') : '' }}
+                                                &nbsp;|&nbsp;
+                                                {{ booking.scheduleTime ? booking.scheduleTime|date('g:i A') : '' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if booking.admin %}
+                                                <span class="creator-badge creator-{{ booking.admin.role == 'ROLE_STAFF' ? 'staff' : 'admin' }}">{{ booking.admin.roleLabel }}</span><br>
+                                                <span class="admin-detail">{{ booking.admin.fullName }}</span>
+                                            {% else %}
+                                                <span class="admin-detail">Client self-booking</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><span class="badge-status status-{{ status|lower }}">{{ status }}</span></td>
+                                        <td class="text-right" onclick="event.stopPropagation();">
+                                            <div class="action-btn-group">
+                                                <button type="button" class="btn-act btn-view" onclick="showRowDetails(this)">View</button>
+                                                {% if isOwner %}
+                                                    <a href="{{ path('staff_booking_edit', {id: booking.bookingId}) }}" class="btn-act btn-approve" style="text-decoration: none;">Edit</a>
+                                                    <form method="POST" action="{{ path('staff_booking_delete', {id: booking.bookingId}) }}" class="admin-inline" onsubmit="return confirm('Delete this booking permanently?');">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('delete_booking_' ~ booking.bookingId) }}">
+                                                        <button type="submit" class="btn-act btn-delete">Delete</button>
+                                                    </form>
+                                                {% else %}
+                                                    <span class="record-lock">View only</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-section-calendar" class="dashboard-calendar" style="display: none;">
+                <div id="calendar"></div>
+            </div>
+        </div>
+
+        <div class="dashboard-side">
+            <div class="table-card dashboard-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>Today's Schedule</h2>
+                        <p class="panel-subtitle">{{ todaysBookings|length }} session{{ todaysBookings|length == 1 ? '' : 's' }} today</p>
+                    </div>
+                    <a href="{{ path('staff_records') }}" class="panel-link">My records &rarr;</a>
+                </div>
+                <div class="today-list">
+                    {% if todaysBookings is empty %}
+                        <div class="admin-empty-state">No sessions scheduled for today.</div>
+                    {% else %}
+                        {% for booking in todaysBookings %}
+                            {% set status = booking.bookingStatus ?: 'Pending' %}
+                            <div class="today-item">
+                                <div class="today-time">{{ booking.scheduleTime ? booking.scheduleTime|date('g:i A') : '—' }}</div>
+                                <div class="today-info">
+                                    <strong>{{ booking.customer ? (booking.customer.fullName ?: 'Client') : 'Client' }}</strong>
+                                    <span>{{ booking.package ? booking.package.name : 'Studio Package' }} · {{ booking.displayReference }}</span>
+                                </div>
+                                <span class="badge-status status-{{ status|lower }}">{{ status }}</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="table-card dashboard-panel">
+                <div class="panel-heading">
+                    <h2>My Activity</h2>
+                    <a href="{{ path('staff_records') }}" class="panel-link">Manage &rarr;</a>
+                </div>
+                <div class="side-metrics">
+                    <div class="side-metric">
+                        <span>Bookings I created</span>
+                        <strong>{{ myBookings }}</strong>
+                    </div>
+                    <div class="side-metric">
+                        <span>My pending bookings</span>
+                        <strong class="admin-pending-value">{{ myPendingBookings }}</strong>
+                    </div>
+                    <div class="side-metric">
+                        <span>My confirmed bookings</span>
+                        <strong class="admin-confirmed-value">{{ myConfirmedBookings }}</strong>
+                    </div>
+                    <div class="side-metric">
+                        <span>Blockouts I added</span>
+                        <strong>{{ myBlockouts }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="bookingModal">
+        <div class="modal-card modal-card-clean">
+            <div class="modal-header">
+                <h2>Booking Details</h2>
+                <button type="button" class="btn-close" onclick="closeModal('bookingModal')">&times;</button>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>Reference</label>
+                    <p id="det-ref" class="highlight-pink"></p>
+                </div>
+                <div class="detail-item">
+                    <label>Status</label>
+                    <p><span id="det-status" class="badge-status"></span></p>
+                </div>
+                <div class="detail-item">
+                    <label>Client Name</label>
+                    <p id="det-name"></p>
+                </div>
+                <div class="detail-item">
+                    <label>Contact Info</label>
+                    <p><span id="det-email"></span><br><span id="det-phone"></span></p>
+                </div>
+                <div class="detail-item">
+                    <label>Package</label>
+                    <p><span id="det-package"></span> (₱<span id="det-price"></span>)</p>
+                </div>
+                <div class="detail-item">
+                    <label>Date &amp; Time</label>
+                    <p><span id="det-date"></span> | <span id="det-time"></span></p>
+                </div>
+                <div class="detail-item full-width">
+                    <label>Created By</label>
+                    <p><span id="det-creator"></span> <span id="det-creator-role"></span></p>
+                </div>
+                <div class="detail-item full-width">
+                    <label>Notes &amp; Add-ons</label>
+                    <div id="det-notes-tags" class="addons-tags-container"></div>
+                </div>
+                <div class="detail-item full-width">
+                    <label>Payment Proof</label>
+                    <div id="det-proof-preview"></div>
+                </div>
+            </div>
+
+            <div class="modal-actions-footer staff-modal-footer">
+                <span class="admin-detail">You can only edit records you created.</span>
+                <div class="action-btn-group">
+                    <a id="det-edit-link" href="#" class="btn-act btn-approve" style="display: none; text-decoration: none;">Edit Record</a>
+                    <button type="button" class="btn-act btn-cancel" onclick="closeModal('bookingModal')">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block staff_javascripts %}
+    <script>
+        let bookingCalendar = null;
+        const calendarEvents = {{ calendarEvents|json_encode|raw }};
+        const currentStaffId = {{ staff.adminId|json_encode|raw }};
+        const editUrlTemplate = {{ path('staff_booking_edit', {id: 0})|json_encode|raw }};
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const calendarEl = document.getElementById('calendar');
+
+            bookingCalendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                },
+                events: calendarEvents,
+                eventContent: function (arg) {
+                    const mainEl = document.createElement('div');
+                    mainEl.className = 'custom-event-content';
+
+                    const titleEl = document.createElement('div');
+                    titleEl.className = 'custom-event-title';
+                    titleEl.innerText = arg.event.title;
+
+                    const badgeEl = document.createElement('div');
+                    badgeEl.className = 'custom-event-badge';
+                    badgeEl.innerText = arg.event.extendedProps.statusBadge;
+
+                    mainEl.appendChild(titleEl);
+                    mainEl.appendChild(badgeEl);
+
+                    return { domNodes: [mainEl] };
+                },
+                eventClick: function (info) {
+                    if (info.event.extendedProps.statusBadge === 'Blockout') {
+                        alert(info.event.title);
+                        return;
+                    }
+                    showBookingDetails(info.event.extendedProps.raw);
+                }
+            });
+
+            document.querySelectorAll('.clickable-row').forEach(function (row) {
+                row.addEventListener('click', function () {
+                    try {
+                        showBookingDetails(JSON.parse(row.dataset.booking));
+                    } catch (e) {
+                        console.error('Unable to read booking details.', e);
+                    }
+                });
+            });
+        });
+
+        function switchView(view) {
+            const tableSec = document.getElementById('view-section-table');
+            const calSec = document.getElementById('view-section-calendar');
+            const btnTable = document.getElementById('btn-view-table');
+            const btnCal = document.getElementById('btn-view-calendar');
+
+            if (view === 'calendar') {
+                tableSec.style.display = 'none';
+                calSec.style.display = 'block';
+                btnTable.classList.remove('active');
+                btnCal.classList.add('active');
+                bookingCalendar.render();
+            } else {
+                tableSec.style.display = 'block';
+                calSec.style.display = 'none';
+                btnTable.classList.add('active');
+                btnCal.classList.remove('active');
+            }
+        }
+
+        function showRowDetails(button) {
+            const row = button.closest('tr');
+            if (!row || !row.dataset.booking) {
+                return;
+            }
+
+            try {
+                showBookingDetails(JSON.parse(row.dataset.booking));
+            } catch (e) {
+                console.error('Unable to read booking details.', e);
+            }
+        }
+
+        function showBookingDetails(b) {
+            if (!b) {
+                return;
+            }
+
+            document.getElementById('det-ref').innerText = b.ref;
+            document.getElementById('det-name').innerText = b.name;
+            document.getElementById('det-email').innerText = b.email;
+            document.getElementById('det-phone').innerText = b.phone;
+            document.getElementById('det-package').innerText = b.package;
+            document.getElementById('det-price').innerText = b.price;
+            document.getElementById('det-date').innerText = b.date;
+            document.getElementById('det-time').innerText = b.time;
+            document.getElementById('det-creator').innerText = b.creator || 'Client self-booking';
+            document.getElementById('det-creator-role').innerText = b.creatorRole && b.creatorRole !== 'Client' ? '(' + b.creatorRole + ')' : '';
+
+            const tagsContainer = document.getElementById('det-notes-tags');
+            tagsContainer.innerHTML = '';
+
+            if (b.notes && b.notes !== 'None') {
+                b.notes.split('|').forEach(function (item) {
+                    const parts = item.split(':');
+                    const tag = document.createElement('div');
+                    tag.className = 'addon-tag';
+
+                    if (parts.length >= 2) {
+                        const keySpan = document.createElement('span');
+                        keySpan.className = 'tag-key';
+                        keySpan.textContent = parts[0].trim();
+
+                        const valSpan = document.createElement('span');
+                        valSpan.className = 'tag-val';
+                        valSpan.textContent = parts.slice(1).join(':').trim();
+
+                        tag.appendChild(keySpan);
+                        tag.appendChild(valSpan);
+                    } else if (item.trim() !== '') {
+                        const valSpan = document.createElement('span');
+                        valSpan.className = 'tag-val';
+                        valSpan.textContent = item.trim();
+                        tag.appendChild(valSpan);
+                    }
+
+                    if (tag.childElementCount > 0) {
+                        tagsContainer.appendChild(tag);
+                    }
+                });
+            }
+
+            if (tagsContainer.childElementCount === 0) {
+                tagsContainer.innerHTML = '<span class="admin-none">No notes or add-ons provided.</span>';
+            }
+
+            const badge = document.getElementById('det-status');
+            badge.textContent = b.status;
+            badge.className = 'badge-status status-' + String(b.status).toLowerCase();
+
+            const proofDiv = document.getElementById('det-proof-preview');
+            proofDiv.innerHTML = '';
+            if (b.proof) {
+                const proofLink = document.createElement('a');
+                proofLink.href = b.proof;
+                proofLink.target = '_blank';
+                proofLink.rel = 'noopener noreferrer';
+                proofLink.className = 'admin-proof-link';
+                proofLink.textContent = 'View uploaded proof →';
+                proofDiv.appendChild(proofLink);
+            } else {
+                proofDiv.innerHTML = '<span class="admin-none">No payment proof uploaded</span>';
+            }
+
+            const canEdit = b.canEdit === true || (b.creatorId && currentStaffId && b.creatorId === currentStaffId);
+            const editLink = document.getElementById('det-edit-link');
+            if (canEdit) {
+                editLink.href = b.editUrl || editUrlTemplate.replace('/0/', '/' + b.id + '/');
+                editLink.style.display = 'inline-flex';
+            } else {
+                editLink.removeAttribute('href');
+                editLink.style.display = 'none';
+            }
+
+            openModal('bookingModal');
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('is-visible');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('is-visible');
+        }
+    </script>
+{% endblock %}

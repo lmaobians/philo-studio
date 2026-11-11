@@ -1,0 +1,68 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = 'Customer Accounts' %}
+
+{% block admin_body %}
+    <div class="action-bar">
+        <h1 class="page-title-pink">Customer Accounts</h1>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <div class="table-card" style="display: inline-block; padding: 16px 24px !important; min-width: 220px;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #71717a; text-transform: uppercase; letter-spacing: 0.05em;">Total Registered Clients</span>
+            <div style="font-size: 2rem; font-weight: 700; color: #18181b; margin-top: 4px;">{{ totalClients }}</div>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <form method="GET" action="{{ path('admin_customers') }}" class="filter-bar" style="display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap;">
+            <select name="search_by" class="custom-select" style="max-width: 170px;">
+                <option value="all" {{ searchBy == 'all' ? 'selected' : '' }}>Search All Fields</option>
+                <option value="id" {{ searchBy == 'id' ? 'selected' : '' }}>Client ID</option>
+                <option value="name" {{ searchBy == 'name' ? 'selected' : '' }}>Full Name</option>
+                <option value="email" {{ searchBy == 'email' ? 'selected' : '' }}>Email Address</option>
+                <option value="phone" {{ searchBy == 'phone' ? 'selected' : '' }}>Phone Number</option>
+                <option value="bookings" {{ searchBy == 'bookings' ? 'selected' : '' }}>Total Bookings</option>
+                <option value="date" {{ searchBy == 'date' ? 'selected' : '' }}>Last Booked Date</option>
+            </select>
+
+            <input type="text" name="search" value="{{ searchQuery }}" placeholder="Search records..." class="custom-input" style="max-width: 280px; flex: 1;">
+
+            <button type="submit" class="btn-act btn-approve">Search</button>
+
+            {% if searchQuery is not empty %}
+                <a href="{{ path('admin_customers') }}" class="btn-act btn-cancel" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">Reset</a>
+            {% endif %}
+        </form>
+
+        <table class="booking-table">
+            <thead>
+                <tr>
+                    <th>CLIENT ID</th>
+                    <th>FULL NAME</th>
+                    <th>EMAIL ADDRESS</th>
+                    <th>PHONE NUMBER</th>
+                    <th>TOTAL BOOKINGS</th>
+                    <th>LAST BOOKED DATE</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if customers is empty %}
+                    <tr><td colspan="6" class="admin-empty-state">No customers found matching criteria.</td></tr>
+                {% else %}
+                    {% for customer in customers %}
+                        {% set stat = stats[customer.customerId] ?? null %}
+                        <tr>
+                            <td>#{{ customer.customerId }}</td>
+                            <td><strong>{{ customer.fullName }}</strong></td>
+                            <td>{{ customer.email }}</td>
+                            <td>{{ customer.phone }}</td>
+                            <td><strong>{{ stat ? stat.count : 0 }} session(s)</strong></td>
+                            <td>{{ stat and stat.last ? stat.last : 'Never' }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

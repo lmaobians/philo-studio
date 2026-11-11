@@ -1,0 +1,20 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gallery | PHILO Studio{% endblock %}
+
+{% block body %}
+    {% include 'partials/header.html.twig' %}
+
+    <section class="hero-section">
+        <p class="hero-subtitle">A GLIMPSE OF OUR WORK</p>
+        <h1 class="hero-title">Gallery</h1>
+    </section>
+
+    <div class="gallery-masonry">
+        {% for i in 3..20 %}
+            <div class="gallery-item"><img src="{{ asset('images/gallery-' ~ i ~ '.jpg') }}" alt="Gallery Photo {{ i }}"></div>
+        {% endfor %}
+    </div>
+
+{% include 'partials/footer.html.twig' %}
+{% endblock %}

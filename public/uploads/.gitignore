@@ -1,0 +1,5 @@
+# Ignore uploaded payment proofs and package images.
+# Keep only the directory structure in Git.
+*
+!.gitignore
+!.gitkeep

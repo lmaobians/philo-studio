@@ -1,0 +1,142 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Packages & Rates | PHILO Studio{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        /* Scoped overrides to enforce side-by-side grid layout & centered chip buttons */
+        .page-title-section {
+            text-align: center;
+            padding: 3rem 1rem 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .chip-nav-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.25rem;
+            margin-bottom: 3.5rem;
+            flex-wrap: wrap;
+        }
+        .chip-btn {
+            display: inline-block;
+            padding: 8px 18px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            color: #333333;
+            font-size: 0.88rem;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
+        }
+        .chip-btn:hover {
+            background: #c46760;
+            color: #ffffff;
+            border-color: #c46760;
+        }
+        .category-subtitle-label {
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #4a4a4a;
+            margin-bottom: 2rem;
+        }
+        .packages-grid-horizontal {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.75rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .packages-grid-horizontal.single-item {
+            grid-template-columns: minmax(300px, 360px);
+            justify-content: center;
+        }
+        @media (max-width: 900px) {
+            .packages-grid-horizontal {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+{% include 'partials/header.html.twig' %}
+
+    <section class="packages-page-container" id="packages-display">
+
+        <div class="page-title-section">
+            <p class="section-label">OUR RATES & SERVICES</p>
+            <h1>Choose Your Experience</h1>
+            <p class="hero-description">From quick solo portraits to full studio rentals, we have a package built for every moment.</p>
+        </div>
+
+        {% for message in app.flashes('error') %}
+            <div class="auth-error" style="max-width: 720px; margin: 0 auto 1.5rem;">{{ message }}</div>
+        {% endfor %}
+
+        <!-- Centered Category Button Filter Chips -->
+        <div class="chip-nav-center">
+            {% for category in categorizedPackages|keys %}
+                <a href="#cat-{{ category|lower|replace({' ': '-'}) }}" class="chip-btn">{{ category }}</a>
+            {% endfor %}
+        </div>
+
+        <!-- Ordered Categories & Side-by-Side Package Grid -->
+        {% for category_name, packages_list in categorizedPackages %}
+            <div class="category-block" id="cat-{{ category_name|lower|replace({' ': '-'}) }}">
+                <p class="category-subtitle-label">{{ category_name }}</p>
+
+                <div class="packages-grid-horizontal {{ packages_list|length == 1 ? 'single-item' : '' }}">
+
+                    {% for package in packages_list %}
+                        <div class="package-card">
+
+                            <div class="card-image-wrap">
+                                <img src="{{ asset(package.displayImageUrl) }}" alt="{{ package.name }}">
+
+                                <span class="img-badge">
+                                    {{ package.duration ?: '30 min' }} ·
+                                    {% if package.minPax == package.maxPax %}
+                                        {{ package.maxPax ?: 1 }} person
+                                    {% else %}
+                                        {{ package.minPax ?: 1 }}–{{ package.maxPax ?: 2 }} people
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <div class="card-body">
+                                <div class="card-head">
+                                    <h3>{{ package.name }}</h3>
+                                    <span class="price">₱{{ package.price|number_format(0) }}</span>
+                                </div>
+
+                                <p class="package-tagline">{{ package.category }}</p>
+
+                                <p class="package-desc-text">
+                                    {{ package.inclusions ?: package.description }}
+                                </p>
+
+                                <form method="POST" action="{{ path('app_packages') }}">
+                                    <input type="hidden" name="select_package_id" value="{{ package.packageId }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('select_package') }}">
+                                    <button type="submit" class="btn-primary full-width">Book This Package &rarr;</button>
+                                </form>
+                            </div>
+
+                        </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+        {% endfor %}
+
+    </section>
+
+{% include 'partials/footer.html.twig' %}
+{% endblock %}

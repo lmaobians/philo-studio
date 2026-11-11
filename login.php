@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $adminStmt->execute(['admin@philostudio.com']);
             $admin = $adminStmt->fetch();
 
-            if ($admin && (password_verify($password, $admin['password']) || $password === 'philostudio111822')) {
+            if ($admin && password_verify($password, $admin['password'])) {
                 $is_admin = true;
                 session_regenerate_id(true);
                 $_SESSION['admin_id']       = $admin['admin_id'];

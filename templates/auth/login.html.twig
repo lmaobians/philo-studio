@@ -1,0 +1,47 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login | Philo Studio{% endblock %}
+
+{% block body %}
+    {% include 'partials/header.html.twig' %}
+
+    <section class="auth-container">
+        <div class="auth-card">
+            <h2>Welcome Back</h2>
+            <p class="auth-subtitle">Log in to manage your studio bookings</p>
+
+            {% if error %}
+                <div class="auth-error">{{ error }}</div>
+            {% endif %}
+            {% for message in app.flashes('error') %}
+                <div class="auth-error">{{ message }}</div>
+            {% endfor %}
+
+            <form action="{{ path('app_login') }}{% if redirect %}?redirect={{ redirect|url_encode }}{% endif %}" method="POST" class="auth-form">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required placeholder="you@example.com" value="{{ app.request.request.get('email') }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="btn-primary full-width">LOG IN</button>
+            </form>
+
+            <p class="auth-footer">
+                Don't have an account? <a href="{{ path('app_register') }}{% if redirect %}?redirect={{ redirect|url_encode }}{% endif %}">Sign up here</a>
+            </p>
+
+            <p class="auth-footer" style="margin-top: 0.75rem;">
+                Studio team:
+                <a href="{{ path('admin_login') }}">Admin login</a>
+                &nbsp;·&nbsp;
+                <a href="{{ path('staff_login') }}">Staff login</a>
+            </p>
+        </div>
+    </section>
+{% endblock %}

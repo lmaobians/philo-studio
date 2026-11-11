@@ -1,0 +1,142 @@
+{% extends 'staff/base.html.twig' %}
+
+{% set page_title = 'New Walk-In Booking' %}
+
+{% block staff_body %}
+    <div class="action-bar">
+        <div>
+            <h1 class="page-title-pink">New Walk-In Booking</h1>
+            <p class="admin-page-subtitle">Record an on-site client booking. It will be linked to your account.</p>
+        </div>
+        <div class="action-btn-group">
+            <a href="{{ path('staff_records') }}" class="btn-act btn-cancel" style="display: inline-flex; align-items: center; text-decoration: none;">&larr; Back to My Records</a>
+        </div>
+    </div>
+
+    <div class="table-card">
+        {% if errors is not empty %}
+            <div class="auth-error" style="margin-bottom: 20px;">
+                {% for error in errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if packages is empty %}
+            <div class="alert-toast alert-toast-error" style="margin-bottom: 20px;">
+                No active packages are available. Please ask an administrator to add one.
+            </div>
+        {% endif %}
+
+        <form method="POST" action="{{ path('staff_booking_new') }}" enctype="multipart/form-data">
+            <input type="hidden" name="_token" value="{{ csrf_token('staff_action') }}">
+
+            <h3 class="card-subtitle">Client Details</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Client Full Name *</label>
+                    <input type="text" name="full_name" class="form-input" required value="{{ form.fullName }}" placeholder="e.g. Maria Clara">
+                </div>
+
+                <div class="form-group">
+                    <label>Client Email *</label>
+                    <input type="email" name="email" class="form-input" required value="{{ form.email }}" placeholder="maria@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" name="phone" class="form-input" value="{{ form.phone }}" placeholder="09123456789">
+                </div>
+
+                <div class="form-group">
+                    <label>Studio Package *</label>
+                    <select name="package_id" class="form-input" required>
+                        <option value="">Select a package</option>
+                        {% for package in packages %}
+                            <option value="{{ package.packageId }}" {{ form.packageId == package.packageId ? 'selected' : '' }}>{{ package.name }} (&#8369;{{ package.price|number_format(0) }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <h3 class="card-subtitle" style="margin-top: 24px;">Schedule</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Schedule Date *</label>
+                    <input type="date" name="schedule_date" class="form-input" required value="{{ form.scheduleDate ?: 'now'|date('Y-m-d') }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Schedule Time *</label>
+                    <input type="time" name="schedule_time" class="form-input" required value="{{ form.scheduleTime ?: '10:00' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Backdrop Color</label>
+                    <select name="backdrop" class="form-input">
+                        {% for color in ['White', 'Grey', 'Latte', 'Sage', 'Blush', 'Brown'] %}
+                            <option value="{{ color }}" {{ form.backdrop == color ? 'selected' : '' }}>{{ color }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Bringing Pets?</label>
+                    <select name="has_pets" class="form-input">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Pet Size</label>
+                    <select name="pet_size" class="form-input">
+                        <option value="">Select size</option>
+                        <option value="Small">Small</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Large">Large</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Number of Pets</label>
+                    <input type="text" name="pet_count" class="form-input" placeholder="e.g. 1">
+                </div>
+
+                <div class="form-group">
+                    <label>Pet Breed</label>
+                    <input type="text" name="pet_breed" class="form-input" placeholder="e.g. Golden Retriever">
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>Additional Notes</label>
+                    <textarea name="notes" class="form-input" rows="3" placeholder="Special requests...">{{ form.notes }}</textarea>
+                </div>
+            </div>
+
+            <h3 class="card-subtitle" style="margin-top: 24px;">Payment</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <select name="payment_method" class="form-input">
+                        <option value="cash" {{ form.paymentMethod == 'cash' ? 'selected' : '' }}>Cash (On-Site)</option>
+                        <option value="gcash" {{ form.paymentMethod == 'gcash' ? 'selected' : '' }}>GCash</option>
+                        <option value="bdo" {{ form.paymentMethod == 'bdo' ? 'selected' : '' }}>BDO Transfer</option>
+                        <option value="gotyme" {{ form.paymentMethod == 'gotyme' ? 'selected' : '' }}>GoTyme</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Payment Proof (JPG, PNG, PDF)</label>
+                    <input type="file" name="payment_proof" class="form-input" accept="image/png,image/jpeg,application/pdf">
+                    <small class="admin-proof-help">Required for GCash, BDO or GoTyme walk-ins.</small>
+                </div>
+            </div>
+
+            <div class="action-btn-group" style="margin-top: 24px;">
+                <button type="submit" class="btn-create" {{ packages is empty ? 'disabled' : '' }}>Create Walk-In Booking</button>
+                <a href="{{ path('staff_records') }}" class="btn-act btn-cancel" style="display: inline-flex; align-items: center; text-decoration: none;">Cancel</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

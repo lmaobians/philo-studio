@@ -1,0 +1,52 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Register | Philo Studio{% endblock %}
+
+{% block body %}
+    {% include 'partials/header.html.twig' %}
+
+    <section class="auth-container">
+        <div class="auth-card">
+            <h2>Create Account</h2>
+            <p class="auth-subtitle">Sign up to book your studio session</p>
+
+            {% if error %}
+                <div class="auth-error">{{ error }}</div>
+            {% endif %}
+
+            <form action="{{ path('app_register') }}{% if redirect %}?redirect={{ redirect|url_encode }}{% endif %}" method="POST" class="auth-form">
+                <input type="hidden" name="_token" value="{{ csrf_token('register') }}">
+                <div class="form-group">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" name="name" required placeholder="JUAN DELA CRUZ" class="uppercase-input" value="{{ name }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" required placeholder="you@example.com" value="{{ email }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="text" id="phone" name="phone" placeholder="0912 345 6789" value="{{ phone }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password *</label>
+                    <input type="password" id="password" name="password" required placeholder="••••••••">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password *</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="btn-primary full-width">CREATE ACCOUNT</button>
+            </form>
+
+            <p class="auth-footer">
+                Already have an account? <a href="{{ path('app_login') }}{% if redirect %}?redirect={{ redirect|url_encode }}{% endif %}">Log in here</a>
+            </p>
+        </div>
+    </section>
+{% endblock %}

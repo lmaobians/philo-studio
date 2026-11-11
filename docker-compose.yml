@@ -8,8 +8,11 @@ services:
     container_name: philo_php
     environment:
       - PHP_OUTPUT_BUFFERING=4096
+    command: sh -c "mkdir -p var/cache var/log var/sessions && chown -R www-data:www-data var && exec php-fpm"
     volumes:
       - .:/var/www/html
+      - ./docker/php/performance.ini:/usr/local/etc/php/conf.d/zz-performance.ini:ro
+      - philo_var:/var/www/html/var
     networks:
       - philo_net
     depends_on:
@@ -64,3 +67,4 @@ networks:
 
 volumes:
   db_data:
+  philo_var:

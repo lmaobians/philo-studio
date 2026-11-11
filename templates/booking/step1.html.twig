@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Select Package | PHILO Studio{% endblock %}
+
+{% block body %}
+    {% include 'partials/header.html.twig' %}
+
+    <section class="packages-page-container booking-container" id="packages-display">
+        <div class="step-header" style="text-align: center; margin-bottom: 2rem;">
+            <p class="booking-step-label">Step 1 of 4</p>
+            <h1>Choose Your Experience</h1>
+            <p>Select a photography package to proceed to date & scheduling</p>
+        </div>
+
+        {% for message in app.flashes('error') %}
+            <div class="auth-error booking-error">{{ message }}</div>
+        {% endfor %}
+
+        <div class="chip-nav" style="margin-bottom: 2.5rem; text-align: center;">
+            {% for category in categorizedPackages|keys %}
+                <a href="#cat-{{ category|lower|replace({' ': '-'}) }}" class="chip">{{ category }}</a>
+            {% endfor %}
+        </div>
+
+        {% for category_name, packages_list in categorizedPackages %}
+            <div class="category-block" id="cat-{{ category_name|lower|replace({' ': '-'}) }}">
+                <p class="category-subtitle-label">{{ category_name|upper }}</p>
+                <div class="packages-page-grid">
+
+                    {% for package in packages_list %}
+                        <div class="package-card">
+                            <div class="card-image-wrap">
+                                <img src="{{ asset(package.displayImageUrl) }}" alt="{{ package.name }}">
+                                <span class="img-badge">
+                                    {{ package.duration }} ·
+                                    {% if package.minPax == package.maxPax %}
+                                        {{ package.maxPax }} person
+                                    {% else %}
+                                        {{ package.minPax }}–{{ package.maxPax }} people
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="card-body">
+                                <div class="card-head">
+                                    <h3>{{ package.name }}</h3>
+                                    <span class="price">₱{{ package.price|number_format(0) }}</span>
+                                </div>
+                                <p class="package-tagline">{{ package.category }}</p>
+                                <p class="package-desc-text">{{ package.inclusions }}</p>
+
+                                <form method="POST" action="{{ path('booking_step1') }}">
+                                    <input type="hidden" name="select_package_id" value="{{ package.packageId }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('select_package') }}">
+                                    <button type="submit" class="btn-primary full-width">Select Package &rarr;</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+        {% endfor %}
+
+    </section>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = isEdit ? 'Edit Package' : 'New Package' %}
+
+{% block admin_body %}
+    <div class="action-bar">
+        <h1 class="page-title-pink">{{ isEdit ? 'Edit Package' : 'Add New Package' }}</h1>
+        <div class="action-btn-group">
+            <a href="{{ path('admin_packages') }}" class="btn-act btn-cancel" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">&larr; Back to Packages</a>
+        </div>
+    </div>
+
+    <div class="table-card">
+        {% if errors is not empty %}
+            <div class="auth-error" style="margin-bottom: 20px;">
+                {% for error in errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" action="{{ isEdit ? path('admin_package_edit', {id: package.packageId}) : path('admin_package_new') }}" enctype="multipart/form-data">
+            <input type="hidden" name="_token" value="{{ csrf_token('package_form') }}">
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Package Name *</label>
+                    <input type="text" name="name" class="form-input" required maxlength="100" value="{{ package.name }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" name="category" class="form-input" maxlength="50" value="{{ package.category ?: 'Standard' }}" placeholder="e.g. The Classics">
+                </div>
+
+                <div class="form-group">
+                    <label>Duration</label>
+                    <input type="text" name="duration" class="form-input" maxlength="50" value="{{ package.duration ?: '30 mins' }}" placeholder="e.g. 30 mins">
+                </div>
+
+                <div class="form-group">
+                    <label>Price (₱) *</label>
+                    <input type="number" step="0.01" min="0" name="price" class="form-input" required value="{{ package.price }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Minimum Pax</label>
+                    <input type="number" min="0" name="min_pax" class="form-input" value="{{ package.minPax }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Maximum Pax</label>
+                    <input type="number" min="0" name="max_pax" class="form-input" value="{{ package.maxPax }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="status" class="custom-select">
+                        <option value="active" {{ package.status == 'active' ? 'selected' : '' }}>Active</option>
+                        <option value="inactive" {{ package.status == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Package Image</label>
+                    <input type="file" name="image" accept="image/jpeg,image/png,image/webp">
+                    <small class="admin-proof-help">Allowed formats: JPG, PNG, WEBP. Maximum 10 MB.</small>
+                    {% if package.imageUrl %}
+                        <div style="margin-top: 10px;">
+                            <img src="{{ asset(package.imageUrl) }}" alt="{{ package.name ?: 'Package' }}" style="max-width: 160px; border-radius: 8px;">
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group span-reason">
+                    <label>Description</label>
+                    <textarea name="description" class="form-input" rows="3">{{ package.description }}</textarea>
+                </div>
+
+                <div class="form-group span-reason">
+                    <label>Inclusions</label>
+                    <textarea name="inclusions" class="form-input" rows="3">{{ package.inclusions }}</textarea>
+                </div>
+
+                <div class="form-group btn-container">
+                    <button type="submit" class="btn-create">{{ isEdit ? 'Save Changes' : 'Create Package' }}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

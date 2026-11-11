@@ -1,0 +1,53 @@
+security:
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    providers:
+        philo_user_provider:
+            id: App\Security\PhiloUserProvider
+
+    firewalls:
+        dev:
+            # Ensure dev tools and static assets are always allowed
+            pattern: ^/(_profiler(/|$)|(_wdt|assets|build)/)
+            security: false
+        main:
+            lazy: true
+            provider: philo_user_provider
+            custom_authenticators:
+                - App\Security\LoginAuthenticator
+            entry_point: App\Security\LoginEntryPoint
+            logout:
+                path: app_logout
+                target: app_home
+                invalidate_session: true
+
+    # Note: Only the *first* matching rule is applied
+    access_control:
+        # Public authentication entry points
+        - { path: ^/admin/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/staff/login$, roles: PUBLIC_ACCESS }
+        - { path: ^/logout$, roles: PUBLIC_ACCESS }
+
+        # Administrative area is administrators only. This rule is placed
+        # before the staff rule so /admin can never be reached by ROLE_STAFF.
+        - { path: ^/admin, roles: ROLE_ADMIN }
+
+        # Operational staff area
+        - { path: ^/staff, roles: ROLE_STAFF }
+
+        # Shared self-service account pages (administrators and staff only)
+        - { path: ^/account, roles: [ROLE_ADMIN, ROLE_STAFF] }
+
+        # Client-facing booking area
+        - { path: ^/dashboard, roles: ROLE_CUSTOMER }
+        - { path: ^/booking, roles: ROLE_CUSTOMER }
+
+when@test:
+    security:
+        password_hashers:
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4
+                time_cost: 3
+                memory_cost: 10

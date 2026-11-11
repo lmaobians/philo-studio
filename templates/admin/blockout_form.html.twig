@@ -1,0 +1,52 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = 'Edit Blockout' %}
+
+{% block admin_body %}
+    <div class="action-bar">
+        <div>
+            <h1 class="page-title-pink">Edit Blockout Date</h1>
+            <p class="admin-page-subtitle">Update a blocked date, holiday or maintenance window.</p>
+        </div>
+        <div class="action-btn-group">
+            <a href="{{ path('admin_blockouts') }}" class="btn-act btn-cancel" style="display: inline-flex; align-items: center; text-decoration: none;">&larr; Back to Blockouts</a>
+        </div>
+    </div>
+
+    <div class="table-card">
+        {% if error %}
+            <div class="auth-error" style="margin-bottom: 20px;">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ path('admin_blockout_edit', {id: blockout.blockoutId}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('admin_action') }}">
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input type="date" name="blockout_date" class="form-input" required value="{{ blockout.blockoutDate ? blockout.blockoutDate|date('Y-m-d') : '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Start Time <span class="optional-text">(Optional)</span></label>
+                    <input type="time" name="start_time" class="form-input" value="{{ blockout.startTime ? blockout.startTime|date('H:i') : '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>End Time <span class="optional-text">(Optional)</span></label>
+                    <input type="time" name="end_time" class="form-input" value="{{ blockout.endTime ? blockout.endTime|date('H:i') : '' }}">
+                </div>
+
+                <div class="form-group">
+                    <label>Reason</label>
+                    <input type="text" name="reason" class="form-input" value="{{ blockout.reason }}" placeholder="e.g. Studio Maintenance or Holiday">
+                </div>
+            </div>
+
+            <div class="action-btn-group" style="margin-top: 24px;">
+                <button type="submit" class="btn-create">Save Blockout</button>
+                <a href="{{ path('admin_blockouts') }}" class="btn-act btn-cancel" style="display: inline-flex; align-items: center; text-decoration: none;">Cancel</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

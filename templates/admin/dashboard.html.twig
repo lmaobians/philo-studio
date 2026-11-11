@@ -1,13 +1,594 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Admin Dashboard | PHILO Studio</title>
-    <link rel="stylesheet" href="{{ asset('style.css') }}">
-    <link rel="stylesheet" href="{{ asset('dashboard.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
-</head>
-<body class="admin-page">
-    <!-- Paste your exact admin nav bar and dashboard container HTML here -->
-</body>
-</html>
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = 'Booking Management' %}
+
+{% block admin_body %}
+    <div class="action-bar">
+        <h1 class="page-title-pink">Booking Management</h1>
+        <div class="action-btn-group">
+            <div class="view-toggle">
+                <button id="btn-view-table" class="btn-toggle active" onclick="switchView('table')">List View</button>
+                <button id="btn-view-calendar" class="btn-toggle" onclick="switchView('calendar')">Calendar View</button>
+            </div>
+            <button onclick="openModal('createModal')" class="btn-create">+ Create Walk-In Booking</button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="label">TOTAL RESERVATIONS</div>
+            <div class="val">{{ totalBookings }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">PENDING REVIEW</div>
+            <div class="val admin-pending-value">{{ pendingCount }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">CONFIRMED</div>
+            <div class="val admin-confirmed-value">{{ confirmedCount }}</div>
+        </div>
+    </div>
+
+    <div id="view-section-table" class="table-card">
+        <form method="GET" action="{{ path('admin_dashboard') }}" class="filter-bar" style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+            <input type="text" name="search" value="{{ searchQuery }}" placeholder="Search records..." class="custom-input" style="max-width: 280px; flex: 1;">
+
+            <select name="status_filter" class="custom-select" style="max-width: 160px;">
+                <option value="All" {{ statusFilter == 'All' ? 'selected' : '' }}>All Statuses</option>
+                <option value="Pending" {{ statusFilter == 'Pending' ? 'selected' : '' }}>Pending</option>
+                <option value="Confirmed" {{ statusFilter == 'Confirmed' ? 'selected' : '' }}>Confirmed</option>
+                <option value="Cancelled" {{ statusFilter == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
+            </select>
+
+            <button type="submit" class="btn-act btn-approve">Search</button>
+
+            {% if searchQuery is not empty or statusFilter != 'All' %}
+                <a href="{{ path('admin_dashboard') }}" class="btn-act btn-cancel" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">Reset Filters</a>
+            {% endif %}
+        </form>
+
+        <table class="booking-table">
+            <thead>
+                <tr>
+                    <th>REF</th>
+                    <th>CLIENT DETAILS</th>
+                    <th>PACKAGE & SLOT</th>
+                    <th>CREATED BY</th>
+                    <th>PROOF</th>
+                    <th>STATUS</th>
+                    <th class="text-right">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if bookings is empty %}
+                    <tr><td colspan="7" class="admin-empty-state">No booking entries found.</td></tr>
+                {% else %}
+                    {% for booking in bookings %}
+                        {% set customer = booking.customer %}
+                        {% set package = booking.package %}
+                        {% set status = booking.bookingStatus ?: 'Pending' %}
+                        {% set packageName = package ? (package.name ?: 'Studio Package') : 'Studio Package' %}
+                        {% set price = package ? package.price : 0 %}
+                        {% set bookingJson = {
+                            'id': booking.bookingId,
+                            'ref': booking.displayReference,
+                            'name': customer ? (customer.fullName ?: 'Client') : 'Client',
+                            'email': customer and customer.email ? customer.email : 'N/A',
+                            'phone': customer and customer.phone ? customer.phone : 'N/A',
+                            'package': packageName,
+                            'price': price|number_format(0),
+                            'date': booking.scheduleDate ? booking.scheduleDate|date('M d, Y') : '',
+                            'time': booking.scheduleTime ? booking.scheduleTime|date('g:i A') : '',
+                            'notes': booking.notes ?: 'None',
+                            'proof': booking.paymentProofUrl,
+                            'status': status
+                        } %}
+                        <tr class="clickable-row" data-booking="{{ bookingJson|json_encode|e('html_attr') }}">
+                            <td><strong>{{ booking.displayReference }}</strong></td>
+                            <td>
+                                <strong>{{ customer ? (customer.fullName ?: 'Client') : 'Client' }}</strong><br>
+                                <span class="admin-detail">{{ customer and customer.email ? customer.email : 'N/A' }}</span><br>
+                                <span class="admin-detail">{{ customer and customer.phone ? customer.phone : 'N/A' }}</span>
+                            </td>
+                            <td>
+                                <strong>{{ packageName }}</strong> (₱{{ price|number_format(0) }})<br>
+                                <span class="admin-detail">
+                                    {{ booking.scheduleDate ? booking.scheduleDate|date('M d, Y') : '' }} &nbsp;|&nbsp; {{ booking.scheduleTime ? booking.scheduleTime|date('g:i A') : '' }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if booking.admin %}
+                                    <span class="creator-badge creator-{{ booking.admin.role == 'ROLE_STAFF' ? 'staff' : 'admin' }}">{{ booking.admin.roleLabel }}</span><br>
+                                    <span class="admin-detail">{{ booking.admin.fullName }}</span>
+                                {% else %}
+                                    <span class="admin-detail">Client self-booking</span>
+                                {% endif %}
+                            </td>
+                            <td onclick="event.stopPropagation();">
+                                {% if booking.paymentProofUrl %}
+                                    <a href="{{ booking.paymentProofUrl }}" target="_blank" rel="noopener noreferrer" class="admin-proof-link">View Proof &rarr;</a>
+                                {% else %}
+                                    <span class="admin-none">None</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge-status status-{{ status|lower }}">
+                                    {{ status }}
+                                </span>
+                            </td>
+                            <td class="text-right" onclick="event.stopPropagation();">
+                                <div class="action-btn-group">
+                                    <a href="{{ path('admin_booking_edit', {id: booking.bookingId}) }}" class="btn-act btn-approve" style="text-decoration: none;">Edit</a>
+                                    <form method="POST" action="{{ path('admin_dashboard') }}" class="admin-inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_action') }}">
+                                        <input type="hidden" name="action" value="update_status">
+                                        <input type="hidden" name="booking_id" value="{{ booking.bookingId }}">
+                                        {% if status != 'Confirmed' %}
+                                            <button type="submit" name="status" value="Confirmed" class="btn-act btn-approve">Approve</button>
+                                        {% endif %}
+                                        {% if status != 'Cancelled' %}
+                                            <button type="submit" name="status" value="Cancelled" class="btn-act btn-cancel">Cancel</button>
+                                        {% endif %}
+                                    </form>
+
+                                    <form method="POST" action="{{ path('admin_dashboard') }}" class="admin-inline" onsubmit="return confirm('Are you sure you want to delete this booking?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('admin_action') }}">
+                                        <input type="hidden" name="action" value="delete_booking">
+                                        <input type="hidden" name="booking_id" value="{{ booking.bookingId }}">
+                                        <button type="submit" class="btn-act btn-delete">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <div id="view-section-calendar" class="calendar-card" style="display: none;">
+        <div id="calendar"></div>
+    </div>
+
+    <!-- Create Walk-In Modal -->
+    <div class="modal-overlay" id="createModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Create Walk-In Reservation</h2>
+                <button type="button" class="btn-close" onclick="closeModal('createModal')">&times;</button>
+            </div>
+
+            <div class="step-indicators">
+                <span class="step-pill active" id="ind-1">1. Customer & Pkg</span>
+                <span class="step-pill" id="ind-2">2. Customization</span>
+                <span class="step-pill" id="ind-3">3. Schedule</span>
+                <span class="step-pill" id="ind-4">4. Payment</span>
+            </div>
+
+            <form method="POST" action="{{ path('admin_dashboard') }}" enctype="multipart/form-data" id="walkinForm">
+                <input type="hidden" name="_token" value="{{ csrf_token('admin_action') }}">
+                <input type="hidden" name="action" value="create_booking">
+
+                <div class="step-content active" id="step-1">
+                    <h3 class="admin-step-title">Step 1: Client & Package Selection</h3>
+                    <div class="form-group">
+                        <label>Client Full Name</label>
+                        <input type="text" id="full_name" name="full_name" required placeholder="e.g. Maria Clara">
+                    </div>
+                    <div class="form-group">
+                        <label>Client Email</label>
+                        <input type="email" id="email" name="email" required placeholder="maria@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="phone" name="phone" required pattern="[0-9]{11}" placeholder="09123456789">
+                        <small class="admin-proof-help">Format: 11-digit PH mobile number (e.g. 09123456789)</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Select Studio Package</label>
+                        <select name="package_id" required>
+                            {% for package in packages %}
+                                <option value="{{ package.packageId }}">{{ package.name }} (₱{{ package.price|number_format(0) }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="admin-right-action">
+                        <button type="button" class="btn-create" onclick="validateAndGo(1, 2)">Next: Customization &rarr;</button>
+                    </div>
+                </div>
+
+                <div class="step-content" id="step-2">
+                    <div class="form-group">
+                        <label>Backdrop Color</label>
+                        <select name="backdrop">
+                            <option value="White">White</option>
+                            <option value="Grey">Grey</option>
+                            <option value="Latte">Latte</option>
+                            <option value="Sage">Sage</option>
+                            <option value="Blush">Blush</option>
+                            <option value="Brown">Brown</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label-uppercase">BRINGING PETS?</label>
+                        <input type="hidden" name="has_pets" id="has_pets_input" value="0">
+                        <div class="pet-toggle-group">
+                            <button type="button" class="pet-toggle-btn active" id="pet_btn_no" onclick="setPetChoice(false)">No</button>
+                            <button type="button" class="pet-toggle-btn" id="pet_btn_yes" onclick="setPetChoice(true)">Yes</button>
+                        </div>
+                    </div>
+
+                    <div class="pet-details-card" id="pet_box">
+                        <div class="pet-grid-row">
+                            <div class="pet-grid-col">
+                                <label>Size</label>
+                                <select name="pet_size">
+                                    <option value="">Select size</option>
+                                    <option value="Small">Small</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Large">Large</option>
+                                </select>
+                            </div>
+                            <div class="pet-grid-col">
+                                <label>Number of pets</label>
+                                <input type="text" name="pet_count" placeholder="e.g. 1">
+                            </div>
+                        </div>
+                        <div>
+                            <label>Breed (type to see suggestions)</label>
+                            <input type="text" name="pet_breed" placeholder="e.g. Golden Retriever, Persian Cat">
+                        </div>
+                    </div>
+
+                    <div class="admin-form-actions" style="margin-top: 24px;">
+                        <button type="button" onclick="goToStep(1)" class="btn-custom-back">&larr; Back</button>
+                        <button type="button" class="btn-proceed-review" onclick="goToStep(3)">Proceed to Review &rarr;</button>
+                    </div>
+                </div>
+
+                <div class="step-content" id="step-3">
+                    <h3 class="admin-step-title">Step 3: Schedule Slot</h3>
+                    <div class="form-group">
+                        <label>Schedule Date</label>
+                        <input type="date" id="schedule_date" name="schedule_date" required value="{{ 'now'|date('Y-m-d') }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Schedule Time</label>
+                        <input type="time" id="schedule_time" name="schedule_time" required value="10:00">
+                    </div>
+                    <div class="form-group">
+                        <label>Additional Session Notes</label>
+                        <textarea name="notes" rows="2" placeholder="Special requests..."></textarea>
+                    </div>
+                    <div class="admin-form-actions">
+                        <button type="button" onclick="goToStep(2)" class="admin-back-button">&larr; Back</button>
+                        <button type="button" class="btn-create" onclick="validateAndGo(3, 4)">Next: Payment &rarr;</button>
+                    </div>
+                </div>
+
+                <div class="step-content" id="step-4">
+                    <h3 class="admin-step-title">Step 4: Payment Method & Proof</h3>
+
+                    <label class="admin-payment-label">Select Payment Method</label>
+                    <div class="payment-methods-grid">
+                        <div class="payment-option selected" onclick="selectPayment('cash', this)">
+                            <input type="radio" name="payment_method" value="cash" checked> Cash (On-Site)
+                        </div>
+                        <div class="payment-option" onclick="selectPayment('gcash', this)">
+                            <input type="radio" name="payment_method" value="gcash"> GCash
+                        </div>
+                        <div class="payment-option" onclick="selectPayment('bdo', this)">
+                            <input type="radio" name="payment_method" value="bdo"> BDO Transfer
+                        </div>
+                        <div class="payment-option" onclick="selectPayment('gotyme', this)">
+                            <input type="radio" name="payment_method" value="gotyme"> GoTyme
+                        </div>
+                    </div>
+
+                    <div class="form-group admin-proof-group" id="proof_upload_group">
+                        <label>Upload Payment Receipt / Proof</label>
+                        <input type="file" name="payment_proof" accept="image/png,image/jpeg,application/pdf">
+                        <span class="admin-proof-help">Required for GCash, BDO, or GoTyme walk-ins.</span>
+                    </div>
+
+                    <div class="admin-form-actions payment-actions">
+                        <button type="button" onclick="goToStep(3)" class="admin-back-button">&larr; Back</button>
+                        <button type="submit" class="btn-create">Complete Walk-In Booking</button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Booking Details Modal -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-card modal-card-clean">
+            <div class="modal-header">
+                <h2>Reservation Details</h2>
+                <button type="button" class="btn-close" onclick="closeModal('detailModal')">&times;</button>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>Reference</label>
+                    <p id="det-ref" class="highlight-pink"></p>
+                </div>
+                <div class="detail-item">
+                    <label>Status</label>
+                    <p><span id="det-status" class="badge-status"></span></p>
+                </div>
+                <div class="detail-item">
+                    <label>Client Name</label>
+                    <p id="det-name"></p>
+                </div>
+                <div class="detail-item">
+                    <label>Contact Info</label>
+                    <p><span id="det-email"></span><br><span id="det-phone"></span></p>
+                </div>
+                <div class="detail-item">
+                    <label>Package</label>
+                    <p><span id="det-package"></span> (₱<span id="det-price"></span>)</p>
+                </div>
+                <div class="detail-item">
+                    <label>Date & Time</label>
+                    <p><span id="det-date"></span> | <span id="det-time"></span></p>
+                </div>
+                <div class="detail-item full-width">
+                    <label>Notes & Add-ons</label>
+                    <div id="det-notes-tags" class="addons-tags-container"></div>
+                </div>
+                <div class="detail-item full-width" id="det-proof-container">
+                    <label>Payment Proof</label>
+                    <div id="det-proof-preview"></div>
+                </div>
+            </div>
+
+            <div class="modal-actions-footer">
+                <form method="POST" action="{{ path('admin_dashboard') }}" id="modal-approve-form" class="admin-inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin_action') }}">
+                    <input type="hidden" name="action" value="update_status">
+                    <input type="hidden" name="booking_id" id="modal-booking-id-1">
+                    <button type="submit" name="status" value="Confirmed" class="btn-act btn-approve btn-lg">Approve Reservation</button>
+                </form>
+
+                <form method="POST" action="{{ path('admin_dashboard') }}" id="modal-cancel-form" class="admin-inline">
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin_action') }}">
+                    <input type="hidden" name="action" value="update_status">
+                    <input type="hidden" name="booking_id" id="modal-booking-id-2">
+                    <button type="submit" name="status" value="Cancelled" class="btn-act btn-cancel btn-lg">Cancel Reservation</button>
+                </form>
+
+                <form method="POST" action="{{ path('admin_dashboard') }}" class="admin-inline" onsubmit="return confirm('Delete this booking permanently?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('admin_action') }}">
+                    <input type="hidden" name="action" value="delete_booking">
+                    <input type="hidden" name="booking_id" id="modal-booking-id-3">
+                    <button type="submit" class="btn-act btn-delete btn-lg">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block admin_javascripts %}
+    <script>
+        let calendar = null;
+        const calendarEvents = {{ calendarEvents|json_encode|raw }};
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
+                },
+                events: calendarEvents,
+                eventContent: function(arg) {
+                    const title = arg.event.title;
+                    const badge = arg.event.extendedProps.statusBadge;
+
+                    const mainEl = document.createElement('div');
+                    mainEl.className = 'custom-event-content';
+
+                    const titleEl = document.createElement('div');
+                    titleEl.className = 'custom-event-title';
+                    titleEl.innerText = title;
+
+                    const badgeEl = document.createElement('div');
+                    badgeEl.className = 'custom-event-badge';
+                    badgeEl.innerText = badge;
+
+                    mainEl.appendChild(titleEl);
+                    mainEl.appendChild(badgeEl);
+
+                    return { domNodes: [mainEl] };
+                },
+                eventClick: function(info) {
+                    if (info.event.extendedProps.statusBadge === 'Blockout') {
+                        alert(info.event.title);
+                        return;
+                    }
+                    showBookingDetails(info.event.extendedProps.raw);
+                }
+            });
+        });
+
+        document.querySelectorAll('.clickable-row').forEach(function (row) {
+            row.addEventListener('click', function () {
+                try {
+                    showBookingDetails(JSON.parse(row.dataset.booking));
+                } catch (e) {
+                    console.error('Unable to read booking details.', e);
+                }
+            });
+        });
+
+        function switchView(view) {
+            const tableSec = document.getElementById('view-section-table');
+            const calSec = document.getElementById('view-section-calendar');
+            const btnTable = document.getElementById('btn-view-table');
+            const btnCal = document.getElementById('btn-view-calendar');
+
+            if (view === 'calendar') {
+                tableSec.style.display = 'none';
+                calSec.style.display = 'block';
+                btnTable.classList.remove('active');
+                btnCal.classList.add('active');
+                calendar.render();
+            } else {
+                tableSec.style.display = 'block';
+                calSec.style.display = 'none';
+                btnTable.classList.add('active');
+                btnCal.classList.remove('active');
+            }
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('is-visible');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('is-visible');
+        }
+
+        function setPetChoice(hasPets) {
+            const btnNo = document.getElementById('pet_btn_no');
+            const btnYes = document.getElementById('pet_btn_yes');
+            const inputHasPets = document.getElementById('has_pets_input');
+            const petBox = document.getElementById('pet_box');
+
+            if (hasPets) {
+                btnYes.classList.add('active');
+                btnNo.classList.remove('active');
+                inputHasPets.value = '1';
+                petBox.classList.add('is-visible');
+            } else {
+                btnNo.classList.add('active');
+                btnYes.classList.remove('active');
+                inputHasPets.value = '0';
+                petBox.classList.remove('is-visible');
+            }
+        }
+
+        function validateAndGo(currentStep, targetStep) {
+            const stepContainer = document.getElementById('step-' + currentStep);
+            const inputs = stepContainer.querySelectorAll('input, select');
+            let isValid = true;
+
+            inputs.forEach(input => {
+                if (!input.checkValidity()) {
+                    input.reportValidity();
+                    isValid = false;
+                    return false;
+                }
+            });
+
+            if (isValid) {
+                goToStep(targetStep);
+            }
+        }
+
+        function showBookingDetails(b) {
+            if (!b) {
+                return;
+            }
+
+            document.getElementById('det-ref').innerText = b.ref;
+            document.getElementById('det-name').innerText = b.name;
+            document.getElementById('det-email').innerText = b.email;
+            document.getElementById('det-phone').innerText = b.phone;
+            document.getElementById('det-package').innerText = b.package;
+            document.getElementById('det-price').innerText = b.price;
+            document.getElementById('det-date').innerText = b.date;
+            document.getElementById('det-time').innerText = b.time;
+
+            const tagsContainer = document.getElementById('det-notes-tags');
+            tagsContainer.innerHTML = '';
+
+            if (b.notes && b.notes !== 'None') {
+                const items = b.notes.split('|');
+                items.forEach(item => {
+                    const parts = item.split(':');
+                    if (parts.length >= 2) {
+                        const key = parts[0].trim();
+                        const val = parts.slice(1).join(':').trim();
+
+                        const tag = document.createElement('div');
+                        tag.className = 'addon-tag';
+
+                        const keySpan = document.createElement('span');
+                        keySpan.className = 'tag-key';
+                        keySpan.textContent = key;
+
+                        const valSpan = document.createElement('span');
+                        valSpan.className = 'tag-val';
+                        valSpan.textContent = val;
+
+                        tag.appendChild(keySpan);
+                        tag.appendChild(valSpan);
+                        tagsContainer.appendChild(tag);
+                    } else if (item.trim() !== '') {
+                        const tag = document.createElement('div');
+                        tag.className = 'addon-tag';
+
+                        const valSpan = document.createElement('span');
+                        valSpan.className = 'tag-val';
+                        valSpan.textContent = item.trim();
+
+                        tag.appendChild(valSpan);
+                        tagsContainer.appendChild(tag);
+                    }
+                });
+            } else {
+                tagsContainer.innerHTML = `<span class="admin-none">No notes or add-ons provided.</span>`;
+            }
+
+            const badge = document.getElementById('det-status');
+            badge.textContent = b.status;
+            badge.className = 'badge-status status-' + b.status.toLowerCase();
+
+            const proofDiv = document.getElementById('det-proof-preview');
+            if (b.proof) {
+                proofDiv.innerHTML = '';
+                const proofLink = document.createElement('a');
+                proofLink.href = b.proof;
+                proofLink.target = '_blank';
+                proofLink.rel = 'noopener noreferrer';
+                proofLink.className = 'admin-proof-link';
+                proofLink.textContent = 'View Uploaded Proof Image →';
+                proofDiv.appendChild(proofLink);
+            } else {
+                proofDiv.innerHTML = `<span class="admin-none">No payment proof uploaded</span>`;
+            }
+
+            document.getElementById('modal-booking-id-1').value = b.id;
+            document.getElementById('modal-booking-id-2').value = b.id;
+            document.getElementById('modal-booking-id-3').value = b.id;
+
+            openModal('detailModal');
+        }
+
+        function goToStep(step) {
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.step-pill').forEach(el => el.classList.remove('active'));
+
+            document.getElementById('step-' + step).classList.add('active');
+            document.getElementById('ind-' + step).classList.add('active');
+        }
+
+        function selectPayment(method, el) {
+            document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+            el.classList.add('selected');
+            el.querySelector('input[type="radio"]').checked = true;
+
+            const proofGroup = document.getElementById('proof_upload_group');
+            if (method === 'cash') {
+                proofGroup.classList.remove('is-visible');
+            } else {
+                proofGroup.classList.add('is-visible');
+            }
+        }
+    </script>
+{% endblock %}

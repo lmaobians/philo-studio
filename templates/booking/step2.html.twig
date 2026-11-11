@@ -1,0 +1,196 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Select Date & Time | PHILO Studio{% endblock %}
+
+{% block body %}
+    {% include 'partials/header.html.twig' %}
+
+    <div class="booking-container">
+        <div class="step-header">
+            <p class="booking-step-label">Step 2 of 4</p>
+            <h1>Select Date & Time Slot</h1>
+        </div>
+
+        {% for message in app.flashes('error') %}
+            <div class="auth-error booking-error">{{ message }}</div>
+        {% endfor %}
+
+        <div class="selected-pkg-bar">
+            <div>
+                <strong>{{ package.name }}</strong>
+                <span class="selected-pkg-meta">(₱{{ package.price|number_format(0) }})</span>
+            </div>
+            <a href="{{ path('app_packages') }}" class="change-package-link">Change Package</a>
+        </div>
+
+        <form method="POST" action="{{ path('booking_step2') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('booking_date') }}">
+            <input type="hidden" name="schedule_date" id="schedule_date" required>
+            <input type="hidden" name="schedule_time" id="schedule_time" required>
+
+            <div class="calendar-card">
+                <div class="cal-header">
+                    <button type="button" class="cal-nav" onclick="changeMonth(-1)">Prev</button>
+                    <h3 id="calendar_month_year"></h3>
+                    <button type="button" class="cal-nav" onclick="changeMonth(1)">Next</button>
+                </div>
+                <div class="cal-grid" id="calendar_days"></div>
+            </div>
+
+            <div class="calendar-card" id="time_section">
+                <h3 class="time-section-title">Available Time Slots (10:00 AM – 8:00 PM)</h3>
+                <div class="slot-grid" id="slots_container"></div>
+            </div>
+
+            <button type="submit" id="next_btn" class="btn-primary full-width booking-next-button" disabled>Proceed to Customization &rarr;</button>
+        </form>
+    </div>
+
+    <script>
+        const slotMinutes = {{ slotMinutes }};
+        let currentDate = new Date();
+        let selectedDateStr = '';
+
+        function renderCalendar() {
+            const monthYearText = document.getElementById('calendar_month_year');
+            const grid = document.getElementById('calendar_days');
+            grid.innerHTML = '';
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+
+            const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            monthYearText.innerText = `${monthNames[month]} ${year}`;
+
+            const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            days.forEach(d => {
+                const label = document.createElement('div');
+                label.className = 'cal-day-label';
+                label.innerText = d;
+                grid.appendChild(label);
+            });
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            for (let i = 0; i < firstDay; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateObj = new Date(year, month, day);
+                const dayOfWeek = dateObj.getDay();
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                const dayCell = document.createElement('div');
+                dayCell.className = 'cal-date';
+                dayCell.innerText = day;
+
+                if (dateObj < today || dayOfWeek === 1) {
+                    dayCell.classList.add('disabled');
+                    if (dayOfWeek === 1) dayCell.title = "Closed on Mondays";
+                } else {
+                    if (selectedDateStr === dateStr) dayCell.classList.add('selected');
+                    dayCell.onclick = function() {
+                        document.querySelectorAll('.cal-date').forEach(c => c.classList.remove('selected'));
+                        dayCell.classList.add('selected');
+                        selectedDateStr = dateStr;
+                        document.getElementById('schedule_date').value = dateStr;
+                        generateTimeSlots();
+                    };
+                }
+                grid.appendChild(dayCell);
+            }
+        }
+
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        async function generateTimeSlots() {
+            const container = document.getElementById('slots_container');
+            container.innerHTML = '';
+            document.getElementById('time_section').classList.add('is-visible');
+            document.getElementById('next_btn').disabled = true;
+            document.getElementById('schedule_time').value = '';
+
+            let bookedSlots = [];
+            try {
+                const res = await fetch(`{{ path('booking_slots') }}?date=${selectedDateStr}`);
+                bookedSlots = await res.json();
+            } catch (err) {
+                console.error("Error fetching booked slots:", err);
+            }
+
+            const now = new Date();
+            const todayFormatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const isToday = (selectedDateStr === todayFormatted);
+            const currentMinutesNow = (now.getHours() * 60) + now.getMinutes();
+
+            let start = 10 * 60;
+            let end = 20 * 60;
+            let availableSlotsCount = 0;
+
+            while (start < end) {
+                if (isToday && start <= currentMinutesNow) {
+                    start += slotMinutes;
+                    continue;
+                }
+
+                let hours = Math.floor(start / 60);
+                let minutes = start % 60;
+                let displayHours = hours % 12 || 12;
+                let ampm = hours < 12 ? 'AM' : 'PM';
+
+                let timePadded12 = `${String(displayHours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} ${ampm}`;
+                let timeUnpadded12 = `${displayHours}:${String(minutes).padStart(2, '0')} ${ampm}`;
+                let rawValue = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00`;
+                let rawValueShort = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+
+                let btn = document.createElement('div');
+                btn.className = 'slot-btn';
+                btn.innerText = timePadded12;
+
+                let isBooked = false;
+                if (Array.isArray(bookedSlots)) {
+                    isBooked = bookedSlots.some(slot => {
+                        let s = String(slot).trim().toLowerCase();
+                        return s === rawValue.toLowerCase() ||
+                               s === rawValueShort.toLowerCase() ||
+                               s === timePadded12.toLowerCase() ||
+                               s === timeUnpadded12.toLowerCase();
+                    });
+                }
+
+                if (isBooked) {
+                    btn.classList.add('disabled');
+                    btn.style.pointerEvents = 'none';
+                    btn.style.opacity = '0.4';
+                    btn.style.textDecoration = 'line-through';
+                    btn.style.backgroundColor = '#e9ecef';
+                    btn.style.color = '#6c757d';
+                } else {
+                    btn.onclick = function() {
+                        document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+                        btn.classList.add('selected');
+                        document.getElementById('schedule_time').value = rawValue;
+                        document.getElementById('next_btn').disabled = false;
+                    };
+                    availableSlotsCount++;
+                }
+
+                container.appendChild(btn);
+                start += slotMinutes;
+            }
+
+            if (availableSlotsCount === 0) {
+                container.innerHTML = '<p style="grid-column: 1 / -1; color: #721c24; background: #f8d7da; padding: 12px; border-radius: 8px; font-size: 0.9rem;">No available time slots remaining for this date. Please select another date.</p>';
+            }
+        }
+
+        renderCalendar();
+    </script>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'admin/base.html.twig' %}
+
+{% set page_title = 'Daily Schedule' %}
+
+{% block admin_body %}
+    <div class="action-bar">
+        <h1 class="page-title-pink">Daily Schedule</h1>
+    </div>
+
+    <div class="table-card">
+        <form method="GET" action="{{ path('admin_daily_schedule') }}" class="filter-bar" style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <label for="date-input" style="font-weight: 600; font-size: 0.9rem; color: #555;">Date:</label>
+                <input type="date" id="date-input" name="date" value="{{ filterDate }}" class="custom-input" style="max-width: 170px;" onchange="this.form.submit()">
+            </div>
+
+            <input type="text" name="search" value="{{ searchQuery }}" placeholder="Search records..." class="custom-input" style="max-width: 280px; flex: 1;">
+
+            <select name="status_filter" class="custom-select" style="max-width: 160px;">
+                <option value="All" {{ statusFilter == 'All' ? 'selected' : '' }}>All Statuses</option>
+                <option value="Pending" {{ statusFilter == 'Pending' ? 'selected' : '' }}>Pending</option>
+                <option value="Confirmed" {{ statusFilter == 'Confirmed' ? 'selected' : '' }}>Confirmed</option>
+                <option value="Cancelled" {{ statusFilter == 'Cancelled' ? 'selected' : '' }}>Cancelled</option>
+            </select>
+
+            <button type="submit" class="btn-act btn-approve">Search</button>
+
+            {% if searchQuery is not empty or statusFilter != 'All' %}
+                <a href="{{ path('admin_daily_schedule', {date: filterDate}) }}" class="btn-act btn-cancel" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">Reset Filters</a>
+            {% endif %}
+        </form>
+
+        <table class="booking-table">
+            <thead>
+                <tr>
+                    <th>TIME</th>
+                    <th>REF</th>
+                    <th>CLIENT</th>
+                    <th>PACKAGE</th>
+                    <th>STATUS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if schedule is empty %}
+                    <tr><td colspan="5" class="admin-empty-state">No scheduled bookings found for this date.</td></tr>
+                {% else %}
+                    {% for booking in schedule %}
+                        {% set customer = booking.customer %}
+                        {% set package = booking.package %}
+                        {% set status = booking.bookingStatus ?: 'Pending' %}
+                        <tr>
+                            <td><strong>{{ booking.scheduleTime ? booking.scheduleTime|date('g:i A') : '' }}</strong></td>
+                            <td>{{ booking.displayReference }}</td>
+                            <td>{{ customer and customer.fullName ? customer.fullName : 'Client' }}</td>
+                            <td>{{ package and package.name ? package.name : 'Studio Package' }}</td>
+                            <td>
+                                <span class="badge-status status-{{ status|lower }}">
+                                    {{ status }}
+                                </span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

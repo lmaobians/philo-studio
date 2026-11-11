@@ -1,0 +1,188 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Account - Philo Studio{% endblock %}
+
+{% block body_class %}customer-dashboard-page{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        /* Extra spacing before the footer */
+        .customer-dashboard-container {
+            margin-bottom: 6rem !important;
+            padding-bottom: 2rem;
+        }
+        .customer-booking-item {
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .customer-booking-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% include 'partials/header.html.twig' %}
+
+    <section class="dashboard-container customer-dashboard-container">
+
+        {% for message in app.flashes('booking_success') %}
+            <div class="booking-success-message">{{ message }}</div>
+        {% endfor %}
+
+        <div class="dashboard-header customer-dashboard-header">
+            <div>
+                <p class="dashboard-welcome-label">WELCOME BACK</p>
+                <h1 class="dashboard-user-name">{{ customer.fullName ?: 'Client' }}</h1>
+                <p class="dashboard-user-email">{{ customer.email }}</p>
+            </div>
+            <a href="{{ path('app_packages') }}" class="btn-primary dashboard-book-button">BOOK NEW SESSION</a>
+        </div>
+
+        <div class="dashboard-card customer-bookings-card">
+            <h2 class="bookings-card-title">My Bookings (Total: {{ bookingRows|length }})</h2>
+
+            {% if bookingRows is empty %}
+                <div class="empty-state customer-empty-state">
+                    <p>You have no bookings yet.</p>
+                    <a href="{{ path('app_packages') }}" class="explore-packages-link">Explore packages &rarr;</a>
+                </div>
+            {% else %}
+                <div class="booking-list customer-booking-list">
+                    {% for row in bookingRows %}
+                        <div class="customer-booking-item" data-booking="{{ row|json_encode|e('html_attr') }}">
+                            <div>
+                                <h3 class="customer-package-name">{{ row.package_name }}</h3>
+                                <p class="customer-booking-date">
+                                    📅 {{ row.date }} &nbsp;|&nbsp;
+                                    ⏰ {{ row.time }}
+                                </p>
+                                <span class="customer-booking-reference">Ref: <strong>{{ row.ref }}</strong></span>
+                            </div>
+                            <div class="customer-booking-summary">
+                                <span class="customer-status-badge">
+                                    {{ row.status }}
+                                </span>
+                                <div class="customer-booking-price">₱{{ row.price|number_format(0) }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Reservation Details Modal -->
+    <div id="reservationModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal-card modal-card-clean">
+            <div class="modal-header">
+                <h2>Reservation Details</h2>
+                <button type="button" class="btn-close" onclick="closeReservationModal()">&times;</button>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <label>Reference</label>
+                    <p id="m-ref" style="font-weight: 700;"></p>
+                </div>
+                <div class="detail-item">
+                    <label>Status</label>
+                    <p><span id="m-status" class="badge-status"></span></p>
+                </div>
+
+                <div class="detail-item">
+                    <label>Client Name</label>
+                    <p id="m-name"></p>
+                </div>
+                <div class="detail-item">
+                    <label>Contact Info</label>
+                    <p id="m-email" class="admin-detail"></p>
+                    <p id="m-phone" class="admin-detail"></p>
+                </div>
+
+                <div class="detail-item">
+                    <label>Package</label>
+                    <p id="m-package"></p>
+                </div>
+                <div class="detail-item">
+                    <label>Date & Time</label>
+                    <p id="m-datetime"></p>
+                </div>
+
+                <div class="detail-item full-width">
+                    <label>Notes & Add-ons</label>
+                    <div id="m-tags" class="addons-tags-container"></div>
+                </div>
+
+                <div class="detail-item full-width text-center" style="margin-top: 0.5rem;">
+                    <label>Payment Proof</label>
+                    <div id="m-proof-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'partials/footer.html.twig' %}
+
+    <script>
+        document.querySelectorAll('.customer-booking-item').forEach(function (item) {
+            item.addEventListener('click', function () {
+                try {
+                    openReservationModal(JSON.parse(item.dataset.booking));
+                } catch (e) {
+                    console.error('Unable to read booking details.', e);
+                }
+            });
+        });
+
+        function openReservationModal(data) {
+            document.getElementById('m-ref').innerText = data.ref;
+
+            const statusEl = document.getElementById('m-status');
+            statusEl.innerText = data.status.toUpperCase();
+            statusEl.className = 'badge-status status-' + data.status.toLowerCase();
+
+            document.getElementById('m-name').innerText = data.client_name;
+            document.getElementById('m-email').innerText = data.email;
+            document.getElementById('m-phone').innerText = data.phone;
+            document.getElementById('m-package').innerText = data.package;
+            document.getElementById('m-datetime').innerText = data.datetime;
+
+            // Render Notes & Add-ons as tags
+            const tagsContainer = document.getElementById('m-tags');
+            tagsContainer.innerHTML = '';
+
+            if (data.tags && Object.keys(data.tags).length > 0) {
+                for (const [key, val] of Object.entries(data.tags)) {
+                    const tagDiv = document.createElement('div');
+                    tagDiv.className = 'addon-tag';
+                    tagDiv.innerHTML = `<span class="tag-key">${key}</span><span class="tag-val">${val}</span>`;
+                    tagsContainer.appendChild(tagDiv);
+                }
+            } else {
+                tagsContainer.innerHTML = '<span class="admin-none">No add-ons or notes attached.</span>';
+            }
+
+            // Render Proof Image link
+            const proofContainer = document.getElementById('m-proof-container');
+            if (data.proof && data.proof.trim() !== '') {
+                proofContainer.innerHTML = `<a href="${data.proof}" target="_blank" class="admin-proof-link">View Uploaded Proof Image &rarr;</a>`;
+            } else {
+                proofContainer.innerHTML = '<span class="admin-none">No payment proof uploaded.</span>';
+            }
+
+            document.getElementById('reservationModal').classList.add('is-visible');
+        }
+
+        function closeReservationModal() {
+            document.getElementById('reservationModal').classList.remove('is-visible');
+        }
+
+        function closeModalOnOverlay(e) {
+            if (e.target.id === 'reservationModal') {
+                closeReservationModal();
+            }
+        }
+    </script>
+{% endblock %}
